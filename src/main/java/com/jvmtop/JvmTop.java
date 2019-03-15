@@ -28,17 +28,12 @@ import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 import com.jvmtop.view.ConsoleView;
-import com.jvmtop.view.VMDetailView;
-import com.jvmtop.view.VMOverviewView;
 import com.jvmtop.view.VMProfileView;
 
 /**
@@ -56,7 +51,6 @@ import com.jvmtop.view.VMProfileView;
  */
 public class JvmTop
 {
-
   public static final String                         VERSION                 = "0.8.0 alpha";
 
   private Double                                     delay_                  = 1.0;
@@ -72,45 +66,19 @@ public class JvmTop
 
   private int                                        maxIterations_          = -1;
 
-  private static Logger                              logger;
-
   private static OptionParser createOptionParser()
   {
     OptionParser parser = new OptionParser();
     parser.acceptsAll(Arrays.asList(new String[] { "help", "?", "h" }),
         "shows this help").forHelp();
     parser
-        .accepts("once",
-            "jvmtop will exit after first output iteration [deprecated, use -n 1 instead]");
-    parser
-        .acceptsAll(Arrays.asList(new String[] { "n", "iteration" }),
-            "jvmtop will exit after n output iterations").withRequiredArg()
-        .ofType(Integer.class);
-    parser
         .acceptsAll(Arrays.asList(new String[] { "d", "delay" }),
             "delay between each output iteration").withRequiredArg()
         .ofType(Double.class);
-    parser.accepts("profile", "start CPU profiling at the specified jvm");
-    parser.accepts("sysinfo", "outputs diagnostic information");
-    parser.accepts("verbose", "verbose mode");
-    parser.accepts("threadlimit",
-        "sets the number of displayed threads in detail mode")
-        .withRequiredArg().ofType(Integer.class);
-    parser
-        .accepts("disable-threadlimit", "displays all threads in detail mode");
 
     parser
         .acceptsAll(Arrays.asList(new String[] { "p", "pid" }),
             "PID to connect to").withRequiredArg().ofType(Integer.class);
-
-    parser
-        .acceptsAll(Arrays.asList(new String[] { "w", "width" }),
-            "Width in columns for the console display").withRequiredArg().ofType(Integer.class);
-
-    parser
-        .accepts("threadnamewidth",
-            "sets displayed thread name length in detail mode (defaults to 30)")
-        .withRequiredArg().ofType(Integer.class);
 
     return parser;
   }
@@ -118,8 +86,6 @@ public class JvmTop
   public static void main(String[] args) throws Exception
   {
     Locale.setDefault(Locale.US);
-
-    logger = Logger.getLogger("jvmtop");
 
     OptionParser parser = createOptionParser();
     OptionSet a = parser.parse(args);
@@ -132,7 +98,6 @@ public class JvmTop
       parser.printHelpOn(System.out);
       System.exit(0);
     }
-    boolean sysInfoOption = a.has("sysinfo");
 
     Integer pid = null;
 
@@ -140,15 +105,7 @@ public class JvmTop
 
     double delay = 1.0;
 
-    boolean profileMode = a.has("profile");
-
     Integer iterations = a.has("once") ? 1 : -1;
-
-    Integer threadlimit = null;
-
-    boolean threadLimitEnabled = true;
-
-    Integer threadNameWidth = null;
 
     if (a.hasArgument("delay"))
     {
@@ -180,111 +137,9 @@ public class JvmTop
       width = (Integer) a.valueOf("width");
     }
 
-    if (a.hasArgument("threadlimit"))
-    {
-      threadlimit = (Integer) a.valueOf("threadlimit");
-    }
-
-    if (a.has("disable-threadlimit"))
-    {
-      threadLimitEnabled = false;
-    }
-
-    if (a.has("verbose"))
-    {
-      fineLogging();
-      logger.setLevel(Level.ALL);
-      logger.fine("Verbosity mode.");
-    }
-
-    if (a.hasArgument("threadnamewidth"))
-    {
-      threadNameWidth = (Integer) a.valueOf("threadnamewidth");
-    }
-
-    if (sysInfoOption)
-    {
-      outputSystemProps();
-    }
-    else
-    {
-      JvmTop jvmTop = new JvmTop();
-      jvmTop.setDelay(delay);
-      jvmTop.setMaxIterations(iterations);
-      if (pid == null)
-      {
-        jvmTop.run(new VMOverviewView(width));
-      }
-      else
-      {
-        if (profileMode)
-        {
-          jvmTop.run(new VMProfileView(pid, width));
-        }
-        else
-        {
-          VMDetailView vmDetailView = new VMDetailView(pid, width);
-          vmDetailView.setDisplayedThreadLimit(threadLimitEnabled);
-          if (threadlimit != null)
-          {
-            vmDetailView.setNumberOfDisplayedThreads(threadlimit);
-          }
-          if (threadNameWidth != null)
-          {
-            vmDetailView.setThreadNameDisplayWidth(threadNameWidth);
-          }
-          jvmTop.run(vmDetailView);
-
-        }
-
-      }
-    }
-  }
-
-  public int getMaxIterations()
-  {
-    return maxIterations_;
-  }
-
-  public void setMaxIterations(int iterations)
-  {
-    maxIterations_ = iterations;
-  }
-
-  private static void fineLogging()
-  {
-    //get the top Logger:
-    Logger topLogger = java.util.logging.Logger.getLogger("");
-
-    // Handler for console (reuse it if it already exists)
-    Handler consoleHandler = null;
-    //see if there is already a console handler
-    for (Handler handler : topLogger.getHandlers())
-    {
-      if (handler instanceof ConsoleHandler)
-      {
-        //found the console handler
-        consoleHandler = handler;
-        break;
-      }
-    }
-
-    if (consoleHandler == null)
-    {
-      //there was no console handler found, create a new one
-      consoleHandler = new ConsoleHandler();
-      topLogger.addHandler(consoleHandler);
-    }
-    //set the console handler to fine:
-    consoleHandler.setLevel(java.util.logging.Level.FINEST);
-  }
-
-  private static void outputSystemProps()
-  {
-    for (Object key : System.getProperties().keySet())
-    {
-      System.out.println(key + "=" + System.getProperty(key + ""));
-    }
+    JvmTop jvmTop = new JvmTop();
+    jvmTop.setDelay(delay);
+    jvmTop.run(new VMProfileView(pid, width));
   }
 
   protected void run(ConsoleView view) throws Exception
@@ -389,11 +244,6 @@ public class JvmTop
       }
     }
     return supportsSystemAverage_;
-  }
-
-  public Double getDelay()
-  {
-    return delay_;
   }
 
   public void setDelay(Double delay)
