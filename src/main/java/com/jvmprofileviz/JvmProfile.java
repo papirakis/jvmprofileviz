@@ -51,10 +51,6 @@ public class JvmProfile {
 
     private Double delay = 1.0;
 
-    private Boolean supportsSystemAverage;
-
-    private java.lang.management.OperatingSystemMXBean localOSBean;
-
     private int totalSeconds;
 
     private static OptionParser createOptionParser() {
@@ -150,10 +146,6 @@ public class JvmProfile {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public JvmProfile() {
-        localOSBean = ManagementFactory.getOperatingSystemMXBean();
     }
 
     public void setDelay(Double delay) {
