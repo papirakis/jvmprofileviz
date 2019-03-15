@@ -24,7 +24,6 @@ import java.lang.Thread.State;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.jvmprofileviz.graph.Graph;
+import com.jvmprofileviz.graph.GraphData;
 import com.jvmprofileviz.monitor.VMInfo;
 
 /**
@@ -59,7 +58,7 @@ public class CPUSampler {
 
     private VMInfo vmInfo_;
 
-    private Graph graph = new Graph();
+    private GraphData graphData = new GraphData();
 
     /**
      * @param vmInfo
@@ -107,13 +106,13 @@ public class CPUSampler {
                             totalThreadCPUTime_.addAndGet(deltaCpuTime);
                             samplesAcquired = true;
 
-                            // Populate graph information
+                            // Populate graphData information
                             if (i + i < stackTrace.length) {
                                 String keyTo = stackTrace[i+ 1].getClassName() + "."
                                         + stackTrace[i + 1].getMethodName();
-                                graph.addVisit(keyFrom, keyTo);
+                                graphData.addVisit(keyFrom, keyTo);
                             } else {
-                                graph.addVisit(keyFrom);
+                                graphData.addVisit(keyFrom);
                             }
                         }
                     }
@@ -143,7 +142,7 @@ public class CPUSampler {
     }
 
     public String getSerializedGraph() throws JsonProcessingException {
-        return graph.serialize();
+        return graphData.serialize();
     }
 }
 

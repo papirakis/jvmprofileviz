@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.util.HashMap;
 
-public class Graph {
+public class GraphData {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final HashMap<String, VertexInfo> graph = new HashMap<String, VertexInfo>();
 

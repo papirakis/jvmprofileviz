@@ -186,9 +186,6 @@ public class JvmProfile {
                 profiler.processIterationAndThenSleep((int) (delay * 1000));
                 elapsedTime = (System.currentTimeMillis() - startTime) / 1000;
             } while (elapsedTime < this.totalSeconds);
-
-            String graph = profiler.getSerializedGraph();
-            System.out.println(graph);
         } catch (NoClassDefFoundError e) {
             e.printStackTrace(System.err);
 
