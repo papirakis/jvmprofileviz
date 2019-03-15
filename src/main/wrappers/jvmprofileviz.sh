@@ -18,6 +18,6 @@ if [ ! -f "$TOOLSJAR" ] ; then
         exit 1
 fi
 
-"$JAVA_HOME"/bin/java $JAVA_OPTS -cp "$DIR/jvmtop.jar:$TOOLSJAR" \
-com.jvmtop.JvmTop "$@"
+"$JAVA_HOME"/bin/java $JAVA_OPTS -cp "$DIR/jvmprofileviz.jar:$TOOLSJAR" \
+com.jvmprofileviz.JvmProfile "$@"
 exit $?

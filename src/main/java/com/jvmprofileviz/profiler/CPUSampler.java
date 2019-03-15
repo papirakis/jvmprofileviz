@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.jvmtop.profiler;
+package com.jvmprofileviz.profiler;
 
 import java.lang.Thread.State;
 import java.lang.management.ThreadInfo;
@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.jvmtop.monitor.VMInfo;
+import com.jvmprofileviz.monitor.VMInfo;
 
 /**
  * Experimental and very basic sampling-based CPU-Profiler.

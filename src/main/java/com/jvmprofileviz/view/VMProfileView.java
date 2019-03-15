@@ -18,15 +18,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.jvmtop.view;
+package com.jvmprofileviz.view;
 
 import java.util.Iterator;
 
-import com.jvmtop.monitor.VMInfo;
-import com.jvmtop.monitor.VMInfoState;
-import com.jvmtop.openjdk.tools.LocalVirtualMachine;
-import com.jvmtop.profiler.CPUSampler;
-import com.jvmtop.profiler.MethodStats;
+import com.jvmprofileviz.monitor.VMInfo;
+import com.jvmprofileviz.monitor.VMInfoState;
+import com.jvmprofileviz.openjdk.tools.LocalVirtualMachine;
+import com.jvmprofileviz.profiler.CPUSampler;
+import com.jvmprofileviz.profiler.MethodStats;
 
 /**
  * CPU sampling-based profiler view which shows methods with top CPU usage.

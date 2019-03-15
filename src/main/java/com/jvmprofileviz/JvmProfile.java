@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.jvmtop;
+package com.jvmprofileviz;
 
 import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
@@ -28,16 +28,15 @@ import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.logging.Logger;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
-import com.jvmtop.view.ConsoleView;
-import com.jvmtop.view.VMProfileView;
+import com.jvmprofileviz.view.ConsoleView;
+import com.jvmprofileviz.view.VMProfileView;
 
 /**
- * JvmTop entry point class.
+ * JvmProfile entry point class.
  *
  * - parses program arguments
  * - selects console view
@@ -49,7 +48,7 @@ import com.jvmtop.view.VMProfileView;
  * @author paru
  *
  */
-public class JvmTop
+public class JvmProfile
 {
   public static final String                         VERSION                 = "0.8.0 alpha";
 
@@ -137,9 +136,9 @@ public class JvmTop
       width = (Integer) a.valueOf("width");
     }
 
-    JvmTop jvmTop = new JvmTop();
-    jvmTop.setDelay(delay);
-    jvmTop.run(new VMProfileView(pid, width));
+    JvmProfile jvmProfile = new JvmProfile();
+    jvmProfile.setDelay(delay);
+    jvmProfile.run(new VMProfileView(pid, width));
   }
 
   protected void run(ConsoleView view) throws Exception
@@ -199,7 +198,7 @@ public class JvmTop
     }
   }
 
-  public JvmTop()
+  public JvmProfile()
   {
     localOSBean_ = ManagementFactory.getOperatingSystemMXBean();
   }
@@ -211,7 +210,7 @@ public class JvmTop
    */
   private void printTopBar()
   {
-    System.out.printf(" JvmTop %s - %8tT, %6s, %2d cpus, %15.15s", VERSION,
+    System.out.printf(" JvmProfile %s - %8tT, %6s, %2d cpus, %15.15s", VERSION,
         new Date(), localOSBean_.getArch(),
         localOSBean_.getAvailableProcessors(), localOSBean_.getName() + " "
             + localOSBean_.getVersion());

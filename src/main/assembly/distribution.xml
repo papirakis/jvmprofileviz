@@ -11,16 +11,16 @@
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>src/main/wrappers/jvmtop.bat</source>
+            <source>src/main/wrappers/jvmprofileviz.bat</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>src/main/wrappers/jvmtop.sh</source>
+            <source>src/main/wrappers/jvmprofileviz.sh</source>
             <outputDirectory>/</outputDirectory>
             <fileMode>0755</fileMode>
         </file>
         <file>
-            <source>${project.build.directory}/jvmtop.jar</source>
+            <source>${project.build.directory}/jvmprofileviz.jar</source>
             <outputDirectory>/</outputDirectory>
         </file>
     </files>

@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.jvmtop.monitor;
+package com.jvmprofileviz.monitor;
 
 import java.io.IOException;
 import java.lang.management.ClassLoadingMXBean;
@@ -37,9 +37,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.jvmtop.openjdk.tools.ConnectionState;
-import com.jvmtop.openjdk.tools.LocalVirtualMachine;
-import com.jvmtop.openjdk.tools.ProxyClient;
+import com.jvmprofileviz.openjdk.tools.ConnectionState;
+import com.jvmprofileviz.openjdk.tools.LocalVirtualMachine;
+import com.jvmprofileviz.openjdk.tools.ProxyClient;
 import com.sun.tools.attach.AttachNotSupportedException;
 
 /**

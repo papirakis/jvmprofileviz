@@ -27,7 +27,7 @@
 /*
  * This file has been modified by jvmtop project authors
  */
-package com.jvmtop.openjdk.tools;
+package com.jvmprofileviz.openjdk.tools;
 
 import java.io.File;
 import java.io.IOException;
