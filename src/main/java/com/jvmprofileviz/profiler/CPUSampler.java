@@ -131,7 +131,7 @@ public class CPUSampler {
                 }
             }
 
-            threadCPUTime.put(ti.getThreadId(), cpuTime);
+            threadCPUTime.put(ti.getThreadId(), tCPUTime);
         }
         if (samplesAcquired) {
             updateCount_.incrementAndGet();
