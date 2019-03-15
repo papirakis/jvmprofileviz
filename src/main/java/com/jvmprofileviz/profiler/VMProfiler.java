@@ -20,6 +20,7 @@
  */
 package com.jvmprofileviz.profiler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jvmprofileviz.monitor.VMInfo;
 import com.jvmprofileviz.openjdk.tools.LocalVirtualMachine;
 
@@ -40,7 +41,11 @@ public class VMProfiler {
         cpuSampler.update();
         while (cur + millis > System.currentTimeMillis()) {
             cpuSampler.update();
-            processIterationAndThenSleep(100);
+            Thread.sleep(100);
         }
+    }
+
+    public String getSerializedGraph() throws JsonProcessingException {
+        return cpuSampler.getSerializedGraph();
     }
 }

@@ -6,23 +6,31 @@ public class VertexInfo {
     private final HashMap<String, Long> edges = new HashMap<String, Long>();
     private int totalVisits;
 
-    public void addVisit(String to, Long cpu) {
+    public void addVisit(String to) {
         this.totalVisits++;
-        addEdge(to, cpu);
+        addEdge(to);
     }
 
-    public void addVisit(Long cpu) {
+    public void addVisit() {
         this.totalVisits++;
     }
 
-    private void addEdge(String to, Long cpu) {
-        Long totalCpu = 0L;
+    public HashMap<String, Long> getEdges() {
+        return edges;
+    }
+
+    public int getTotalVisits() {
+        return totalVisits;
+    }
+
+    private void addEdge(String to) {
+        Long totalVisits = 0L;
 
         if (edges.containsKey(to)) {
-            totalCpu = edges.get(to);
+            totalVisits = edges.get(to);
         }
 
-        totalCpu += cpu;
-        edges.put(to, totalCpu);
+        totalVisits++;
+        edges.put(to, totalVisits);
     }
 }

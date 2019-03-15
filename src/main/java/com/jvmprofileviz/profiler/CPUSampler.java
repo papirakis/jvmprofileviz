@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.jvmprofileviz.graph.Graph;
 import com.jvmprofileviz.monitor.VMInfo;
 
@@ -122,9 +123,9 @@ public class CPUSampler {
                             if (i + i < stackTrace.length) {
                                 String keyTo = stackTrace[i+ 1].getClassName() + "."
                                         + stackTrace[i + 1].getMethodName();
-                                graph.addCpu(keyFrom, keyTo, deltaCpuTime);
+                                graph.addVisit(keyFrom, keyTo);
                             } else {
-                                graph.addCpu(keyFrom, deltaCpuTime);
+                                graph.addVisit(keyFrom);
                             }
                         }
                     }
@@ -160,6 +161,10 @@ public class CPUSampler {
             }
         }
         return false;
+    }
+
+    public String getSerializedGraph() throws JsonProcessingException {
+        return graph.serialize();
     }
 }
 

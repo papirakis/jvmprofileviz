@@ -124,17 +124,21 @@ public class JvmProfile {
         jvmProfile.run(new VMProfiler(pid, width));
     }
 
-    protected void run(VMProfiler view) throws Exception {
+    protected void run(VMProfiler profiler) throws Exception {
         long startTime = System.currentTimeMillis();
 
         try {
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(FileDescriptor.out)), false));
 
-            long elapsedTime = (System.currentTimeMillis() - startTime) / 1000;
-            while (elapsedTime < this.totalSeconds) {
-                view.processIterationAndThenSleep((int) (delay * 1000));
-            }
+            long elapsedTime;
+            do {
+                profiler.processIterationAndThenSleep((int) (delay * 1000));
+                elapsedTime = (System.currentTimeMillis() - startTime) / 1000;
+            } while (elapsedTime < this.totalSeconds);
+
+            String graph = profiler.getSerializedGraph();
+            System.out.println(graph);
         } catch (NoClassDefFoundError e) {
             e.printStackTrace(System.err);
 
@@ -143,6 +147,8 @@ public class JvmProfile {
             System.err
                     .println("       Please check if the JAVA_HOME environment variable has been set to a JDK path.");
             System.err.println("");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

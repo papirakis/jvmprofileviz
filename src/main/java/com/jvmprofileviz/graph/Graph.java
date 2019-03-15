@@ -2,6 +2,7 @@ package com.jvmprofileviz.graph;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.util.HashMap;
 
@@ -9,14 +10,18 @@ public class Graph {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final HashMap<String, VertexInfo> graph = new HashMap<String, VertexInfo>();
 
-    public void addCpu(String from, String to, Long cpu) {
-        VertexInfo fromVertexInfo = getVertex(from);
-        fromVertexInfo.addVisit(to, cpu);
+    static {
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
-    public void addCpu(String from, Long cpu) {
+    public void addVisit(String from, String to) {
         VertexInfo fromVertexInfo = getVertex(from);
-        fromVertexInfo.addVisit(cpu);
+        fromVertexInfo.addVisit(to);
+    }
+
+    public void addVisit(String from) {
+        VertexInfo fromVertexInfo = getVertex(from);
+        fromVertexInfo.addVisit();
     }
 
     private VertexInfo getVertex(String key) {
@@ -33,6 +38,6 @@ public class Graph {
     }
 
     public String serialize() throws JsonProcessingException {
-        return mapper.writeValueAsString(this);
+        return mapper.writeValueAsString(graph);
     }
 }
