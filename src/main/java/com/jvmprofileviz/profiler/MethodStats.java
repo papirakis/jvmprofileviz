@@ -99,12 +99,4 @@ public class MethodStats implements Comparable<MethodStats> {
     public AtomicLong getHits() {
         return hits_;
     }
-
-    public String getClassName() {
-        return className_;
-    }
-
-    public String getMethodName() {
-        return methodName_;
-    }
 }

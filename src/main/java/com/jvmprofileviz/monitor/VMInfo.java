@@ -60,14 +60,6 @@ public class VMInfo {
 
     private Collection<java.lang.management.GarbageCollectorMXBean> gcMXBeans;
 
-    private long lastGcTime;
-
-    private long lastUpTime = -1;
-
-    private long lastCPUTime = -1;
-
-    private MemoryMXBean memoryMXBean;
-
     private ThreadMXBean threadMXBean;
 
     private VMInfoState state_ = VMInfoState.INIT;
@@ -99,13 +91,13 @@ public class VMInfo {
             if (localvm == null || !localvm.isAttachable()) {
                 Logger.getLogger("jvmtop").log(Level.FINE,
                         "jvm is not attachable (PID=" + vmid + ")");
-                return VMInfo.createDeadVM(localvm);
+                return VMInfo.createDeadVM();
             }
             return attachToVM(localvm, vmid);
         } catch (Exception e) {
             Logger.getLogger("jvmtop").log(Level.FINE,
                     "error during attach (PID=" + vmid + ")", e);
-            return VMInfo.createDeadVM(localvm);
+            return VMInfo.createDeadVM();
         }
     }
 
@@ -122,10 +114,7 @@ public class VMInfo {
      * @throws InvocationTargetException
      * @throws Exception
      */
-    private static VMInfo attachToVM(LocalVirtualMachine localvm, int vmid)
-            throws AttachNotSupportedException, IOException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException, Exception {
-        //VirtualMachine vm = VirtualMachine.attach("" + vmid);
+    private static VMInfo attachToVM(LocalVirtualMachine localvm, int vmid) {
         try {
 
             ProxyClient proxyClient = ProxyClient.getProxyClient(localvm);
@@ -133,14 +122,14 @@ public class VMInfo {
             if (proxyClient.getConnectionState() == ConnectionState.DISCONNECTED) {
                 Logger.getLogger("jvmtop").log(Level.FINE,
                         "connection refused (PID=" + vmid + ")");
-                return createDeadVM(localvm);
+                return createDeadVM();
             }
             return new VMInfo(proxyClient);
         } catch (ConnectException rmiE) {
             if (rmiE.getMessage().contains("refused")) {
                 Logger.getLogger("jvmtop").log(Level.FINE,
                         "connection refused (PID=" + vmid + ")", rmiE);
-                return createDeadVM(localvm, VMInfoState.CONNECTION_REFUSED);
+                return createDeadVM(VMInfoState.CONNECTION_REFUSED);
             }
             rmiE.printStackTrace(System.err);
         } catch (IOException e) {
@@ -149,14 +138,14 @@ public class VMInfo {
                     || e.getMessage().contains("Permission denied")) {
                 Logger.getLogger("jvmtop").log(Level.FINE,
                         "could not attach (PID=" + vmid + ")", e);
-                return createDeadVM(localvm, VMInfoState.CONNECTION_REFUSED);
+                return createDeadVM(VMInfoState.CONNECTION_REFUSED);
             }
             e.printStackTrace(System.err);
         } catch (Exception e) {
             Logger.getLogger("jvmtop").log(Level.WARNING,
                     "could not attach (PID=" + vmid + ")", e);
         }
-        return createDeadVM(localvm);
+        return createDeadVM();
     }
 
     private VMInfo() {
@@ -166,22 +155,19 @@ public class VMInfo {
     /**
      * Creates a dead VMInfo, representing a jvm which cannot be attached or other monitoring issues occurred.
      *
-     * @param localVm
      * @return
      */
-    public static VMInfo createDeadVM(LocalVirtualMachine localVm) {
-        return createDeadVM(localVm, VMInfoState.ERROR_DURING_ATTACH);
+    public static VMInfo createDeadVM() {
+        return createDeadVM(VMInfoState.ERROR_DURING_ATTACH);
     }
 
     /**
      * Creates a dead VMInfo, representing a jvm in a given state
      * which cannot be attached or other monitoring issues occurred.
      *
-     * @param localVm
      * @return
      */
-    public static VMInfo createDeadVM(LocalVirtualMachine localVm,
-                                      VMInfoState state) {
+    public static VMInfo createDeadVM(VMInfoState state) {
         VMInfo vmInfo = new VMInfo();
         vmInfo.state_ = state;
         return vmInfo;
@@ -192,7 +178,7 @@ public class VMInfo {
      *
      * @throws Exception
      */
-    public void update() throws Exception {
+    public void update() {
         if (state_ == VMInfoState.ERROR_DURING_ATTACH
                 || state_ == VMInfoState.DETACHED
                 || state_ == VMInfoState.CONNECTION_REFUSED) {
@@ -210,12 +196,10 @@ public class VMInfo {
             osBean = proxyClient.getSunOperatingSystemMXBean();
             runtimeMXBean = proxyClient.getRuntimeMXBean();
             gcMXBeans = proxyClient.getGarbageCollectorMXBeans();
-            memoryMXBean = proxyClient.getMemoryMXBean();
             threadMXBean = proxyClient.getThreadMXBean();
 
             //TODO: fetch jvm-constant data only once
             systemProperties_ = runtimeMXBean.getSystemProperties();
-            updateInternal();
         } catch (Throwable e) {
             Logger.getLogger("jvmtop").log(Level.FINE, "error during update", e);
             updateErrorCount_++;
@@ -238,9 +222,6 @@ public class VMInfo {
         long cpuTime = proxyClient.getProcessCpuTime();
         //long cpuTime = osBean.getProcessCpuTime();
         long gcTime = sumGCTimes();
-        lastUpTime = uptime;
-        lastCPUTime = cpuTime;
-        lastGcTime = gcTime;
     }
 
     /**

@@ -49,19 +49,8 @@ public class CPUSampler {
 
     private ConcurrentMap<String, MethodStats> data_ = new ConcurrentHashMap<String, MethodStats>();
 
-    private long beginCPUTime_ = 0;
-
     private AtomicLong totalThreadCPUTime_ = new AtomicLong(
             0);
-
-    //TODO: these exception list should be expanded to the most common 3rd-party library packages
-    private List<String> filter = Arrays
-            .asList(new String[]{
-                    "org.eclipse.", "org.apache.", "java.", "sun.", "com.sun.", "javax.",
-                    "oracle.", "com.trilead.", "org.junit.", "org.mockito.",
-                    "org.hibernate.", "com.ibm.", "com.caucho."
-
-            });
 
     private ConcurrentMap<Long, Long> threadCPUTime = new ConcurrentHashMap<Long, Long>();
 
@@ -79,7 +68,6 @@ public class CPUSampler {
     public CPUSampler(VMInfo vmInfo) throws Exception {
         super();
         threadMxBean_ = vmInfo.getThreadMXBean();
-        beginCPUTime_ = vmInfo.getProxyClient().getProcessCpuTime();
         vmInfo_ = vmInfo;
     }
 
@@ -152,15 +140,6 @@ public class CPUSampler {
     private boolean isReallySleeping(StackTraceElement se) {
         return se.getClassName().equals("sun.nio.ch.EPollArrayWrapper") &&
                 se.getMethodName().equals("epollWait");
-    }
-
-    public boolean isFiltered(StackTraceElement se) {
-        for (String filteredPackage : filter) {
-            if (se.getClassName().startsWith(filteredPackage)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public String getSerializedGraph() throws JsonProcessingException {

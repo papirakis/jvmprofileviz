@@ -29,7 +29,7 @@ public class VMProfiler {
 
     private VMInfo vmInfo;
 
-    public VMProfiler(int vmid, Integer width) throws Exception {
+    public VMProfiler(int vmid) throws Exception {
         LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
                 .getLocalVirtualMachine(vmid);
         vmInfo = VMInfo.processNewVM(localVirtualMachine, vmid);
