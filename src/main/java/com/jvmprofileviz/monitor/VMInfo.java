@@ -21,16 +21,13 @@
 package com.jvmprofileviz.monitor;
 
 import java.io.IOException;
-import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.ConnectException;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,15 +72,7 @@ public class VMInfo {
 
     private VMInfoState state_ = VMInfoState.INIT;
 
-    private long deltaUptime_;
-
-    private long deltaCpuTime_;
-
-    private long deltaGcTime_;
-
     private int updateErrorCount_ = 0;
-
-    private ClassLoadingMXBean classLoadingMXBean_;
 
     private Map<String, String> systemProperties_;
 
@@ -221,7 +210,6 @@ public class VMInfo {
             osBean = proxyClient.getSunOperatingSystemMXBean();
             runtimeMXBean = proxyClient.getRuntimeMXBean();
             gcMXBeans = proxyClient.getGarbageCollectorMXBeans();
-            classLoadingMXBean_ = proxyClient.getClassLoadingMXBean();
             memoryMXBean = proxyClient.getMemoryMXBean();
             threadMXBean = proxyClient.getThreadMXBean();
 
@@ -250,12 +238,6 @@ public class VMInfo {
         long cpuTime = proxyClient.getProcessCpuTime();
         //long cpuTime = osBean.getProcessCpuTime();
         long gcTime = sumGCTimes();
-        if (lastUpTime > 0 && lastCPUTime > 0 && gcTime > 0) {
-            deltaUptime_ = uptime - lastUpTime;
-            deltaCpuTime_ = (cpuTime - lastCPUTime) / 1000000;
-            deltaGcTime_ = gcTime - lastGcTime;
-        }
-
         lastUpTime = uptime;
         lastCPUTime = cpuTime;
         lastGcTime = gcTime;
