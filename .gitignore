@@ -1,15 +1,12 @@
-# Eclipse
+dependency-reduced-pom.xml
+*.iml
+target/
+logs/
+.idea/
+build/
+out/
+.gradle/
+bin/
 .classpath
 .project
-
-# Intellij
-.idea/
-*.iml
-*.iws
-
-# Mac
-.DS_Store
-
-# Maven
-log/
-target/
+.settings

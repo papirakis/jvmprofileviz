@@ -28,12 +28,8 @@
 /*
  * This file has been modified by jvmtop project authors
  */
-package com.jvmtop.openjdk.tools;
+package com.jvmprofileviz.openjdk.tools;
 
-/**
- * Values for the {@linkplain #CONNECTION_STATE_PROPERTY
- * <i>ConnectionState</i>} bound property.
- */
 public enum ConnectionState {
   /**
    * The connection has been successfully established.
