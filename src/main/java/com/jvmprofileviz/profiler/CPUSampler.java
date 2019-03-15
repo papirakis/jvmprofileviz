@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.jvmprofileviz.graph.Graph;
 import com.jvmprofileviz.monitor.VMInfo;
 
 /**
@@ -68,6 +69,8 @@ public class CPUSampler {
 
     private VMInfo vmInfo_;
 
+    private Graph graph = new Graph();
+
     /**
      * @param vmInfo
      * @throws Exception
@@ -102,24 +105,32 @@ public class CPUSampler {
                 if (ti.getStackTrace().length > 0
                         && ti.getThreadState() == State.RUNNABLE
                 ) {
-                    for (StackTraceElement stElement : ti.getStackTrace()) {
-                        if (isReallySleeping(stElement)) {
-                            break;
+                    StackTraceElement[] stackTrace = ti.getStackTrace();
+
+                    if (!shouldBeIgnored(stackTrace)) {
+                        for (int i = 0; i < stackTrace.length; i++) {
+                            StackTraceElement stElement = stackTrace[i];
+                            String keyFrom = stElement.getClassName() + "."
+                                    + stElement.getMethodName();
+                            data_.putIfAbsent(keyFrom, new MethodStats(stElement.getClassName(),
+                                    stElement.getMethodName()));
+                            data_.get(keyFrom).getHits().addAndGet(deltaCpuTime);
+                            totalThreadCPUTime_.addAndGet(deltaCpuTime);
+                            samplesAcquired = true;
+
+                            // Populate graph information
+                            if (i + i < stackTrace.length) {
+                                String keyTo = stackTrace[i+ 1].getClassName() + "."
+                                        + stackTrace[i + 1].getMethodName();
+                                graph.addCpu(keyFrom, keyTo, deltaCpuTime);
+                            } else {
+                                graph.addCpu(keyFrom, deltaCpuTime);
+                            }
                         }
-                        if (isFiltered(stElement)) {
-                            continue;
-                        }
-                        String key = stElement.getClassName() + "."
-                                + stElement.getMethodName();
-                        data_.putIfAbsent(key, new MethodStats(stElement.getClassName(),
-                                stElement.getMethodName()));
-                        data_.get(key).getHits().addAndGet(deltaCpuTime);
-                        totalThreadCPUTime_.addAndGet(deltaCpuTime);
-                        samplesAcquired = true;
-                        break;
                     }
                 }
             }
+
             threadCPUTime.put(ti.getThreadId(), cpuTime);
         }
         if (samplesAcquired) {
@@ -127,8 +138,14 @@ public class CPUSampler {
         }
     }
 
-    public Long getUpdateCount() {
-        return updateCount_.get();
+    private boolean shouldBeIgnored(StackTraceElement[] stackTrace) {
+        for (StackTraceElement stElement : stackTrace) {
+            if (isReallySleeping(stElement) || isFiltered(stElement)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean isReallySleeping(StackTraceElement se) {

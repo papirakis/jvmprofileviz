@@ -7,27 +7,29 @@ import java.util.HashMap;
 
 public class Graph {
     private static final ObjectMapper mapper = new ObjectMapper();
-    private final HashMap<String, Vertex> graph = new HashMap<String, Vertex>();
+    private final HashMap<String, VertexInfo> graph = new HashMap<String, VertexInfo>();
 
-    public void visitLink(String from, String to) {
-        Vertex fromVertex = getVertex(from);
-        fromVertex.addVisit();
-
-        Vertex toVertex = getVertex(to);
-        toVertex.addVisit();
+    public void addCpu(String from, String to, Long cpu) {
+        VertexInfo fromVertexInfo = getVertex(from);
+        fromVertexInfo.addCpu(to, cpu);
     }
 
-    private Vertex getVertex(String key) {
-        Vertex vertex;
+    public void addCpu(String from, Long cpu) {
+        VertexInfo fromVertexInfo = getVertex(from);
+        fromVertexInfo.addCpu(cpu);
+    }
+
+    private VertexInfo getVertex(String key) {
+        VertexInfo vertexInfo;
 
         if (!graph.containsKey(key)) {
-            vertex = new Vertex();
-            graph.put(key, vertex);
+            vertexInfo = new VertexInfo();
+            graph.put(key, vertexInfo);
         } else {
-            vertex = graph.get(key);
+            vertexInfo = graph.get(key);
         }
 
-        return vertex;
+        return vertexInfo;
     }
 
     public String serialize() throws JsonProcessingException {
