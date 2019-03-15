@@ -26,19 +26,18 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Locale;
 
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
-import com.jvmprofileviz.view.VMProfileView;
+import com.jvmprofileviz.profiler.VMProfiler;
 
 /**
  * JvmProfile entry point class.
  *
  * - parses program arguments
- * - selects console view
+ * - selects console profile
  * - prints header
  * - main "iteration loop"
  *
@@ -48,33 +47,29 @@ import com.jvmprofileviz.view.VMProfileView;
  *
  */
 public class JvmProfile {
-    public static final String VERSION = "0.8.0 alpha";
+    public static final String VERSION = "0.0.1";
 
-    private Double delay_ = 1.0;
+    private Double delay = 1.0;
 
-    private Boolean supportsSystemAverage_;
+    private Boolean supportsSystemAverage;
 
-    private java.lang.management.OperatingSystemMXBean localOSBean_;
+    private java.lang.management.OperatingSystemMXBean localOSBean;
 
-    private final static String CLEAR_TERMINAL_ANSI_CMD = new String(
-            new byte[]{
-                    (byte) 0x1b, (byte) 0x5b, (byte) 0x32, (byte) 0x4a, (byte) 0x1b,
-                    (byte) 0x5b, (byte) 0x48});
-
-    private int maxIterations_ = -1;
+    private int totalSeconds;
 
     private static OptionParser createOptionParser() {
         OptionParser parser = new OptionParser();
-        parser.acceptsAll(Arrays.asList(new String[]{"help", "?", "h"}),
+        parser.acceptsAll(Arrays.asList(new String[]{ "help", "?", "h" }),
                 "shows this help").forHelp();
-        parser
-                .acceptsAll(Arrays.asList(new String[]{"d", "delay"}),
+        parser.acceptsAll(Arrays.asList(new String[]{ "d", "delay" }),
                         "delay between each output iteration").withRequiredArg()
                 .ofType(Double.class);
 
-        parser
-                .acceptsAll(Arrays.asList(new String[]{"p", "pid"}),
+        parser.acceptsAll(Arrays.asList(new String[]{ "p", "pid" }),
                         "PID to connect to").withRequiredArg().ofType(Integer.class);
+
+        parser.acceptsAll(Arrays.asList(new String[] { "t", "time" }),
+                "Total time to run the profiler for in seconds. Defaults to 60.").withRequiredArg().ofType(Integer.class);
 
         return parser;
     }
@@ -99,6 +94,8 @@ public class JvmProfile {
 
         double delay = 1.0;
 
+        int totalSeconds = 60;
+
         Integer iterations = a.has("once") ? 1 : -1;
 
         if (a.hasArgument("delay")) {
@@ -106,10 +103,6 @@ public class JvmProfile {
             if (delay < 0.1d) {
                 throw new IllegalArgumentException("Delay cannot be set below 0.1");
             }
-        }
-
-        if (a.hasArgument("n")) {
-            iterations = (Integer) a.valueOf("n");
         }
 
         //to support PID as non option argument
@@ -121,31 +114,26 @@ public class JvmProfile {
             pid = (Integer) a.valueOf("pid");
         }
 
-        if (a.hasArgument("width")) {
-            width = (Integer) a.valueOf("width");
+        if (a.hasArgument("time")) {
+            totalSeconds = (Integer) a.valueOf("time");
         }
 
         JvmProfile jvmProfile = new JvmProfile();
         jvmProfile.setDelay(delay);
-        jvmProfile.run(new VMProfileView(pid, width));
+        jvmProfile.setTotalSeconds(totalSeconds);
+        jvmProfile.run(new VMProfiler(pid, width));
     }
 
-    protected void run(VMProfileView view) throws Exception {
+    protected void run(VMProfiler view) throws Exception {
+        long startTime = System.currentTimeMillis();
+
         try {
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(FileDescriptor.out)), false));
-            int iterations = 0;
-            while (!view.shouldExit()) {
-                if (maxIterations_ > 1 || maxIterations_ == -1) {
-                    clearTerminal();
-                }
-                printTopBar();
-                System.out.flush();
-                iterations++;
-                if (iterations >= maxIterations_ && maxIterations_ > 0) {
-                    break;
-                }
-                view.sleep((int) (delay_ * 1000));
+
+            long elapsedTime = (System.currentTimeMillis() - startTime) / 1000;
+            while (elapsedTime < this.totalSeconds) {
+                view.processIterationAndThenSleep((int) (delay * 1000));
             }
         } catch (NoClassDefFoundError e) {
             e.printStackTrace(System.err);
@@ -158,58 +146,15 @@ public class JvmProfile {
         }
     }
 
-    /**
-     *
-     */
-    private void clearTerminal() {
-        if (System.getProperty("os.name").contains("Windows")) {
-            //hack
-            System.out
-                    .printf("%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n%n");
-        } else if (System.getProperty("jvmtop.altClear") != null) {
-            System.out.print('\f');
-        } else {
-            System.out.print(CLEAR_TERMINAL_ANSI_CMD);
-        }
-    }
-
     public JvmProfile() {
-        localOSBean_ = ManagementFactory.getOperatingSystemMXBean();
-    }
-
-    /**
-     * @throws NoSuchMethodException
-     * @throws SecurityException
-     */
-    private void printTopBar() {
-        System.out.printf(" JvmProfile %s - %8tT, %6s, %2d cpus, %15.15s", VERSION,
-                new Date(), localOSBean_.getArch(),
-                localOSBean_.getAvailableProcessors(), localOSBean_.getName() + " "
-                        + localOSBean_.getVersion());
-
-        if (supportSystemLoadAverage() && localOSBean_.getSystemLoadAverage() != -1) {
-            System.out.printf(", load avg %3.2f%n",
-                    localOSBean_.getSystemLoadAverage());
-        } else {
-            System.out.println();
-        }
-        System.out.println(" https://github.com/patric-r/jvmtop");
-        System.out.println();
-    }
-
-    private boolean supportSystemLoadAverage() {
-        if (supportsSystemAverage_ == null) {
-            try {
-                supportsSystemAverage_ = (localOSBean_.getClass().getMethod(
-                        "getSystemLoadAverage") != null);
-            } catch (Throwable e) {
-                supportsSystemAverage_ = false;
-            }
-        }
-        return supportsSystemAverage_;
+        localOSBean = ManagementFactory.getOperatingSystemMXBean();
     }
 
     public void setDelay(Double delay) {
-        delay_ = delay;
+        this.delay = delay;
+    }
+
+    public void setTotalSeconds(int totalSeconds) {
+        this.totalSeconds = totalSeconds;
     }
 }

@@ -11,12 +11,12 @@ public class Graph {
 
     public void addCpu(String from, String to, Long cpu) {
         VertexInfo fromVertexInfo = getVertex(from);
-        fromVertexInfo.addCpu(to, cpu);
+        fromVertexInfo.addVisit(to, cpu);
     }
 
     public void addCpu(String from, Long cpu) {
         VertexInfo fromVertexInfo = getVertex(from);
-        fromVertexInfo.addCpu(cpu);
+        fromVertexInfo.addVisit(cpu);
     }
 
     private VertexInfo getVertex(String key) {

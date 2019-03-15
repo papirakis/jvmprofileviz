@@ -4,15 +4,15 @@ import java.util.HashMap;
 
 public class VertexInfo {
     private final HashMap<String, Long> edges = new HashMap<String, Long>();
-    private int totalCpu;
+    private int totalVisits;
 
-    public void addCpu(String to, Long cpu) {
-        this.totalCpu += cpu;
+    public void addVisit(String to, Long cpu) {
+        this.totalVisits++;
         addEdge(to, cpu);
     }
 
-    public void addCpu(Long cpu) {
-        this.totalCpu += cpu;
+    public void addVisit(Long cpu) {
+        this.totalVisits++;
     }
 
     private void addEdge(String to, Long cpu) {

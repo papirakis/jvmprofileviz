@@ -18,52 +18,29 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-package com.jvmprofileviz.view;
+package com.jvmprofileviz.profiler;
 
 import com.jvmprofileviz.monitor.VMInfo;
 import com.jvmprofileviz.openjdk.tools.LocalVirtualMachine;
-import com.jvmprofileviz.profiler.CPUSampler;
 
-/**
- * CPU sampling-based profiler view which shows methods with top CPU usage.
- *
- * @author paru
- *
- */
-public class VMProfileView  {
-    private static final int MIN_WIDTH = 80;
+public class VMProfiler {
+    private CPUSampler cpuSampler;
 
-    private boolean shouldExit_ = false;
+    private VMInfo vmInfo;
 
-    private CPUSampler cpuSampler_;
-
-    private VMInfo vmInfo_;
-
-    public VMProfileView(int vmid, Integer width) throws Exception {
+    public VMProfiler(int vmid, Integer width) throws Exception {
         LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
                 .getLocalVirtualMachine(vmid);
-        vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
-        cpuSampler_ = new CPUSampler(vmInfo_);
+        vmInfo = VMInfo.processNewVM(localVirtualMachine, vmid);
+        cpuSampler = new CPUSampler(vmInfo);
     }
 
-    public void sleep(long millis) throws Exception {
+    public void processIterationAndThenSleep(long millis) throws Exception {
         long cur = System.currentTimeMillis();
-        cpuSampler_.update();
+        cpuSampler.update();
         while (cur + millis > System.currentTimeMillis()) {
-            cpuSampler_.update();
-            sleep(100);
+            cpuSampler.update();
+            processIterationAndThenSleep(100);
         }
-    }
-
-    public boolean shouldExit() {
-        return shouldExit_;
-    }
-
-    /**
-     * Requests the disposal of this view - it should be called again.
-     * TODO: refactor / remove this functional, use proper exception handling instead.
-     */
-    public void exit() {
-        shouldExit_ = true;
     }
 }

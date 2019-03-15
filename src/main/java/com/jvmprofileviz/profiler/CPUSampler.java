@@ -140,7 +140,7 @@ public class CPUSampler {
 
     private boolean shouldBeIgnored(StackTraceElement[] stackTrace) {
         for (StackTraceElement stElement : stackTrace) {
-            if (isReallySleeping(stElement) || isFiltered(stElement)) {
+            if (isReallySleeping(stElement)) {
                 return true;
             }
         }
