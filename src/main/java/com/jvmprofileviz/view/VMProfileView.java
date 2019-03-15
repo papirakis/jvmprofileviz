@@ -20,13 +20,9 @@
  */
 package com.jvmprofileviz.view;
 
-import java.util.Iterator;
-
 import com.jvmprofileviz.monitor.VMInfo;
-import com.jvmprofileviz.monitor.VMInfoState;
 import com.jvmprofileviz.openjdk.tools.LocalVirtualMachine;
 import com.jvmprofileviz.profiler.CPUSampler;
-import com.jvmprofileviz.profiler.MethodStats;
 
 /**
  * CPU sampling-based profiler view which shows methods with top CPU usage.
@@ -34,93 +30,40 @@ import com.jvmprofileviz.profiler.MethodStats;
  * @author paru
  *
  */
-public class VMProfileView extends AbstractConsoleView
-{
+public class VMProfileView  {
+    private static final int MIN_WIDTH = 80;
 
-  private CPUSampler cpuSampler_;
+    private boolean shouldExit_ = false;
 
-  private VMInfo     vmInfo_;
+    private CPUSampler cpuSampler_;
 
-  public VMProfileView(int vmid, Integer width) throws Exception
-  {
-    super(width);
-    LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
-        .getLocalVirtualMachine(vmid);
-    vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
-    cpuSampler_ = new CPUSampler(vmInfo_);
-  }
+    private VMInfo vmInfo_;
 
-  @Override
-  public void sleep(long millis) throws Exception
-  {
-    long cur = System.currentTimeMillis();
-    cpuSampler_.update();
-    while (cur + millis > System.currentTimeMillis())
-    {
-      cpuSampler_.update();
-      super.sleep(100);
+    public VMProfileView(int vmid, Integer width) throws Exception {
+        LocalVirtualMachine localVirtualMachine = LocalVirtualMachine
+                .getLocalVirtualMachine(vmid);
+        vmInfo_ = VMInfo.processNewVM(localVirtualMachine, vmid);
+        cpuSampler_ = new CPUSampler(vmInfo_);
     }
 
-  }
-
-  @Override
-  public void printView() throws Exception
-  {
-    if (vmInfo_.getState() == VMInfoState.ATTACHED_UPDATE_ERROR)
-    {
-      System.out
-          .println("ERROR: Could not fetch telemetries - Process terminated?");
-      exit();
-      return;
-    }
-    if (vmInfo_.getState() != VMInfoState.ATTACHED)
-    {
-      System.out.println("ERROR: Could not attach to process.");
-      exit();
-      return;
+    public void sleep(long millis) throws Exception {
+        long cur = System.currentTimeMillis();
+        cpuSampler_.update();
+        while (cur + millis > System.currentTimeMillis()) {
+            cpuSampler_.update();
+            sleep(100);
+        }
     }
 
-    int w = width - 40;
-    System.out.printf(" Profiling PID %d: %40s %n%n", vmInfo_.getId(),
-        leftStr(vmInfo_.getDisplayName(), w));
-
-    // these are the spaces taken up by the formatting, the rest is usable
-    // for printing out the method name
-    w = width - (1 + 6 + 3 + 9 + 3 + 2);
-    for (Iterator<MethodStats> iterator = cpuSampler_.getTop(20).iterator(); iterator
-        .hasNext();)
-    {
-      MethodStats stats = iterator.next();
-      double wallRatio = (double) stats.getHits().get()
-          / cpuSampler_.getTotal() * 100;
-      if (!Double.isNaN(wallRatio))
-      {
-        System.out.printf(" %6.2f%% (%9.2fs) %s()%n", wallRatio, wallRatio
-            / 100d
-            * cpuSampler_.getUpdateCount() * 0.1d,
-            shortFQN(stats.getClassName(), stats.getMethodName(), w));
-      }
+    public boolean shouldExit() {
+        return shouldExit_;
     }
-  }
 
-  /**
-   * Shortens a full qualified class name if it exceeds the size.
-   * TODO: improve method to shorten middle packages first,
-   * maybe abbreviating the package by its first character.
-   *
-   * @param fqn
-   * @param method
-   * @param size
-   * @return
-   */
-  private String shortFQN(String fqn, String method, int size)
-  {
-    String line = fqn + "." + method;
-    if (line.length() > size)
-    {
-      line = "..." + line.substring(3, size);
+    /**
+     * Requests the disposal of this view - it should be called again.
+     * TODO: refactor / remove this functional, use proper exception handling instead.
+     */
+    public void exit() {
+        shouldExit_ = true;
     }
-    return line;
-  }
-
 }
