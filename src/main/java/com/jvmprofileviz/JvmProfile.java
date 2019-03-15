@@ -24,6 +24,7 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.Locale;
 
+import com.jvmprofileviz.graph.GraphData;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -120,8 +121,8 @@ public class JvmProfile {
                 printHelp(parser);
             }
 
-            if (outputFile != null) {
-                System.err.println("With no PID specified, you cannot provide an output file name.");
+            if (outputFile == null) {
+                System.err.println("With no PID specified, you need to provide an output file name.");
                 System.err.println();
                 printHelp(parser);
             }
@@ -146,23 +147,11 @@ public class JvmProfile {
 
             VMProfiler profiler = new VMProfiler(pid);
             jvmProfile.run(profiler);
-            dumpToFile(outputFile, profiler.getSerializedGraph());
+            profiler.getGraphData().writeToFile(outputFile);
         } else {
             // Display the graph with graphviz.
-            System.out.println("Imagine a pretty graph was printed.");
-        }
-    }
-
-    private static void dumpToFile(String fileName, String graph) throws IOException {
-        FileWriter writer = null;
-
-        try {
-            writer = new FileWriter(new File(fileName));
-            writer.write(graph);
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
+            GraphData graph = new GraphData(inputFile);
+            graph.writeSvgGraphFile(outputFile);
         }
     }
 

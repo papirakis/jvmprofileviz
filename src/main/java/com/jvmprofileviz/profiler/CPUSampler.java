@@ -96,7 +96,7 @@ public class CPUSampler {
                     StackTraceElement[] stackTrace = ti.getStackTrace();
 
                     if (!shouldBeIgnored(stackTrace)) {
-                        for (int i = 0; i < stackTrace.length; i++) {
+                        for (int i = stackTrace.length - 1; i >= 0; i--) {
                             StackTraceElement stElement = stackTrace[i];
                             String keyFrom = stElement.getClassName() + "."
                                     + stElement.getMethodName();
@@ -107,9 +107,9 @@ public class CPUSampler {
                             samplesAcquired = true;
 
                             // Populate graphData information
-                            if (i + i < stackTrace.length) {
-                                String keyTo = stackTrace[i+ 1].getClassName() + "."
-                                        + stackTrace[i + 1].getMethodName();
+                            if (i > 0) {
+                                String keyTo = stackTrace[i - 1].getClassName() + "."
+                                        + stackTrace[i - 1].getMethodName();
                                 graphData.addVisit(keyFrom, keyTo);
                             } else {
                                 graphData.addVisit(keyFrom);
@@ -141,8 +141,8 @@ public class CPUSampler {
                 se.getMethodName().equals("epollWait");
     }
 
-    public String getSerializedGraph() throws JsonProcessingException {
-        return graphData.serialize();
+    public GraphData getGraphData() {
+        return graphData;
     }
 }
 

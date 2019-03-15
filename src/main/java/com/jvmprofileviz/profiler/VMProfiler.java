@@ -21,6 +21,7 @@
 package com.jvmprofileviz.profiler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.jvmprofileviz.graph.GraphData;
 import com.jvmprofileviz.monitor.VMInfo;
 import com.jvmprofileviz.openjdk.tools.LocalVirtualMachine;
 
@@ -45,7 +46,7 @@ public class VMProfiler {
         }
     }
 
-    public String getSerializedGraph() throws JsonProcessingException {
-        return cpuSampler.getSerializedGraph();
+    public GraphData getGraphData() throws JsonProcessingException {
+        return cpuSampler.getGraphData();
     }
 }
