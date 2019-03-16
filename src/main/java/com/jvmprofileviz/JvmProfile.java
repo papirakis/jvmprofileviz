@@ -160,8 +160,6 @@ public class JvmProfile {
                         mw.loadFile();
                     } catch (IOException e) {
                         e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
 
                     mw.setVisible(true);

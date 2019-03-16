@@ -14,6 +14,7 @@ import guru.nidi.graphviz.model.MutableNode;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 
 import static guru.nidi.graphviz.model.Factory.mutGraph;
 import static guru.nidi.graphviz.model.Factory.mutNode;
@@ -21,6 +22,7 @@ import static guru.nidi.graphviz.model.Factory.mutNode;
 public class GraphData {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final HashMap<String, VertexInfo> graph;
+    private List<String> roots;
 
     static {
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
@@ -50,6 +52,7 @@ public class GraphData {
         if (!graph.containsKey(key)) {
             vertexInfo = new VertexInfo(key);
             graph.put(key, vertexInfo);
+            roots = null;
         } else {
             vertexInfo = graph.get(key);
         }
@@ -143,6 +146,26 @@ public class GraphData {
         }
 
         return max;
+    }
+
+    public VertexInfo[] findLeafs() {
+        LeafFinder leafFinder = new LeafFinder(this);
+        return leafFinder.run();
+    }
+
+    public List<String> getRoots() {
+        if (roots == null) {
+            RootFinder finder = new RootFinder(this);
+            roots = finder.findRoots();
+        }
+
+        return roots;
+    }
+
+    public void removeLeafs(List<String> toRemove) {
+        LeafRemover remover = new LeafRemover(this);
+        remover.remove(getRoots(), toRemove);
+        roots = null;
     }
 
     HashMap<String, VertexInfo> getGraph() {

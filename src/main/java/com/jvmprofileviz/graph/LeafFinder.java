@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class LeafFinder {
+class LeafFinder {
     private final HashMap<String, VertexInfo> data;
 
     public LeafFinder(GraphData graph) {

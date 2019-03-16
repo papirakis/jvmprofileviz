@@ -30,6 +30,10 @@ public class VertexInfo {
         return totalVisits;
     }
 
+    void reduceVisits(Long numVisits) {
+        this.totalVisits -= numVisits;
+    }
+
     public String getName() { return name; }
 
     private void addEdge(String to) {

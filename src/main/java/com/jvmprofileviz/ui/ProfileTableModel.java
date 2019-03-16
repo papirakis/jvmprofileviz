@@ -5,19 +5,25 @@ import com.jvmprofileviz.graph.VertexInfo;
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ProfileTableModel extends AbstractTableModel {
     public static final int NUMBER_OF_COLUMNS = 3;
 
     private ArrayList<VertexInfo> vertices;
-    private ArrayList<Boolean> selected = new ArrayList<Boolean>();
+    private ArrayList<Boolean> selected;
+    private int total = 0;
 
     public void loadData(VertexInfo[] data) {
+        total = 0;
         vertices = new ArrayList<VertexInfo>();
         vertices.addAll(Arrays.asList(data));
 
+        selected = new ArrayList<Boolean>();
+
         for (int i = 0; i < data.length; i++ ) {
             selected.add(false);
+            total += vertices.get(i).getTotalVisits();
         }
     }
 
@@ -43,7 +49,24 @@ public class ProfileTableModel extends AbstractTableModel {
             return vertexInfo.getName();
         }
 
-        return vertexInfo.getTotalVisits();
+        return new Double(getPercentageOfCpu(vertexInfo.getTotalVisits()));
+    }
+
+    public double getPercentageOfCpu(int numVisits) {
+        double result = Math.round((double)numVisits / (double)total * 10000.0);
+        return result / 100;
+    }
+
+    public List<String> getSelected() {
+        ArrayList<String> result = new ArrayList<String>();
+
+        for (int i = 0; i < selected.size(); i++) {
+            if (selected.get(i)) {
+                result.add(vertices.get(i).getName());
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -69,7 +92,7 @@ public class ProfileTableModel extends AbstractTableModel {
         }
 
         if (c == 1) {
-            return Integer.class;
+            return Double.class;
         }
 
         return Boolean.class;
