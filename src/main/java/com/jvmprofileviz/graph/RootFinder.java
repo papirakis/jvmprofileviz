@@ -20,7 +20,7 @@ class RootFinder {
     public List<String> findRoots() {
         for (String key : graph.keySet()) {
             for (String vetexName : graph.get(key).getEdges().keySet()) {
-                if (notReferencedYet.contains(key)) {
+                if (notReferencedYet.contains(vetexName)) {
                     notReferencedYet.remove(vetexName);
                 }
             }

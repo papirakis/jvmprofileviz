@@ -31,7 +31,7 @@ class LeafFinder {
     private class StackRank implements Comparator<VertexInfo> {
         @Override
         public int compare(VertexInfo o1, VertexInfo o2) {
-            return o2.getTotalVisits() - o1.getTotalVisits();
+            return (int)(o2.getTotalVisits() - o1.getTotalVisits());
         }
     }
 }

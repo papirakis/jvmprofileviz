@@ -136,7 +136,7 @@ public class GraphData {
     }
 
     private double getMaxVisits() {
-        int max = 0;
+        Long max = 0L;
         for (String key : graph.keySet()) {
             VertexInfo vertex = graph.get(key);
 

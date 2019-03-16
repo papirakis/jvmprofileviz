@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class VertexInfo {
     private final HashMap<String, Long> edges = new HashMap<String, Long>();
     private String name;
-    private int totalVisits;
+    private Long totalVisits;
 
     public VertexInfo() { }
 
@@ -26,7 +26,7 @@ public class VertexInfo {
         return edges;
     }
 
-    public int getTotalVisits() {
+    public Long getTotalVisits() {
         return totalVisits;
     }
 

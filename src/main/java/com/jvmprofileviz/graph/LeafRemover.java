@@ -11,7 +11,22 @@ class LeafRemover {
     }
 
     public void remove(List<String> roots, List<String> toRemove) {
+        HashSet<String> toRemoveHash = new HashSet<String>(toRemove);
+        for (String root : roots) {
+            doRemove(toRemoveHash, root);
+        }
 
+        List<String> zeroVisits = new ArrayList<String>();
+
+        for (String key : graph.keySet()) {
+            if (graph.get(key).getTotalVisits() <= 0) {
+                zeroVisits.add(key);
+            }
+        }
+
+        for (String key : zeroVisits) {
+            graph.remove(key);
+        }
     }
 
     private boolean doRemove(Set<String> toRemove, String current) {
@@ -24,6 +39,7 @@ class LeafRemover {
         VertexInfo vertex = graph.get(current);
 
         if (toRemove.contains(vertex.getName())) {
+            vertex.reduceVisits(vertex.getTotalVisits());
             return true;
         }
 

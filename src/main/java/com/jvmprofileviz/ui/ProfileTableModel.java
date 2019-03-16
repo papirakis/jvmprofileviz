@@ -52,7 +52,7 @@ public class ProfileTableModel extends AbstractTableModel {
         return new Double(getPercentageOfCpu(vertexInfo.getTotalVisits()));
     }
 
-    public double getPercentageOfCpu(int numVisits) {
+    public double getPercentageOfCpu(Long numVisits) {
         double result = Math.round((double)numVisits / (double)total * 10000.0);
         return result / 100;
     }
