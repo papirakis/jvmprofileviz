@@ -39,18 +39,23 @@ class LeafRemover {
         VertexInfo vertex = graph.get(current);
 
         if (toRemove.contains(vertex.getName())) {
-            vertex.reduceVisits(vertex.getTotalVisits());
+            vertex.clearVisits();
             return true;
         }
 
         boolean result = false;
+        ArrayList<String> needsRemoving = new ArrayList<String>();
         for (String key : vertex.getEdges().keySet()) {
             boolean thisOne = doRemove(toRemove, key);
 
             if (thisOne) {
-                vertex.reduceVisits(vertex.getEdges().get(key));
+                needsRemoving.add(key);
                 result = true;
             }
+        }
+
+        for (String key : needsRemoving) {
+            vertex.removeEdge(key);
         }
 
         return result;

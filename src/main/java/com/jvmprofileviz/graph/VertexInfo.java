@@ -30,8 +30,19 @@ public class VertexInfo {
         return totalVisits;
     }
 
-    void reduceVisits(Long numVisits) {
+    public void reduceVisits(Long numVisits) {
         this.totalVisits -= numVisits;
+    }
+
+    public void clearVisits() {
+        this.totalVisits = 0L;
+    }
+
+    void removeEdge(String edgeName) {
+        if (edges.containsKey(edgeName)) {
+            reduceVisits(edges.get(edgeName));
+            edges.remove(edgeName);
+        }
     }
 
     public String getName() { return name; }
