@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import com.jvmprofileviz.graph.GraphData;
+import com.jvmprofileviz.ui.MainWindow;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -114,31 +115,31 @@ public class JvmProfile {
             inputFile = (String) a.valueOf("input");
         }
 
-        if (pid == null) {
-            if (inputFile == null) {
-                System.err.println("With no PID specified, you need to provide an input file name.");
-                System.err.println();
-                printHelp(parser);
-            }
-
-            if (outputFile == null) {
-                System.err.println("With no PID specified, you need to provide an output file name.");
-                System.err.println();
-                printHelp(parser);
-            }
-        } else {
-            if (inputFile != null) {
-                System.err.println("Without a PID specified, you cannot provide an input file name.");
-                System.err.println();
-                printHelp(parser);
-            }
-
-            if (outputFile == null) {
-                System.err.println("Without no PID specified, you need to provide an output file name.");
-                System.err.println();
-                printHelp(parser);
-            }
-        }
+//        if (pid == null) {
+//            if (inputFile == null) {
+//                System.err.println("With no PID specified, you need to provide an input file name.");
+//                System.err.println();
+//                printHelp(parser);
+//            }
+//
+//            if (outputFile == null) {
+//                System.err.println("With no PID specified, you need to provide an output file name.");
+//                System.err.println();
+//                printHelp(parser);
+//            }
+//        } else {
+//            if (inputFile != null) {
+//                System.err.println("Without a PID specified, you cannot provide an input file name.");
+//                System.err.println();
+//                printHelp(parser);
+//            }
+//
+//            if (outputFile == null) {
+//                System.err.println("Without no PID specified, you need to provide an output file name.");
+//                System.err.println();
+//                printHelp(parser);
+//            }
+//        }
 
         if (pid != null) {
             JvmProfile jvmProfile = new JvmProfile();
@@ -149,9 +150,23 @@ public class JvmProfile {
             jvmProfile.run(profiler);
             profiler.getGraphData().writeToFile(outputFile);
         } else {
-            // Display the graph with graphviz.
-            GraphData graph = new GraphData(inputFile);
-            graph.writeSvgGraphFile(outputFile);
+//            // Display the graph with graphviz.
+//            GraphData graph = new GraphData(inputFile);
+//            graph.writeSvgGraphFile(outputFile);
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    MainWindow mw = new MainWindow();
+                    try {
+                        mw.loadFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    mw.setVisible(true);
+                }
+            });
         }
     }
 

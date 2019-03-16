@@ -48,7 +48,7 @@ public class GraphData {
         VertexInfo vertexInfo;
 
         if (!graph.containsKey(key)) {
-            vertexInfo = new VertexInfo();
+            vertexInfo = new VertexInfo(key);
             graph.put(key, vertexInfo);
         } else {
             vertexInfo = graph.get(key);
@@ -143,5 +143,9 @@ public class GraphData {
         }
 
         return max;
+    }
+
+    HashMap<String, VertexInfo> getGraph() {
+        return graph;
     }
 }
