@@ -20,11 +20,13 @@
  */
 package com.jvmprofileviz.profiler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.jvmprofileviz.graph.GraphData;
 import com.jvmprofileviz.monitor.VMInfo;
 import com.jvmprofileviz.openjdk.tools.LocalVirtualMachine;
+import com.jvmprofileviz.stacktrace.StackTraceStats;
 
+/*
+ * Rewritten almost entirely for jvmprofileviz.
+ */
 public class VMProfiler {
     private CPUSampler cpuSampler;
 
@@ -46,7 +48,7 @@ public class VMProfiler {
         }
     }
 
-    public GraphData getGraphData() throws JsonProcessingException {
-        return cpuSampler.getGraphData();
+    public StackTraceStats getStats() {
+        return cpuSampler.getStats();
     }
 }

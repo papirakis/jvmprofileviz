@@ -3,34 +3,56 @@ package com.jvmprofileviz.graph;
 import java.util.HashMap;
 
 public class VertexInfo {
-    private final HashMap<String, Long> edges = new HashMap<String, Long>();
-    private int totalVisits;
+    private final HashMap<Integer, Long> edges = new HashMap<Integer, Long>();
+    private Integer id;
+    private long totalVisits;
 
-    public void addVisit(String to) {
-        this.totalVisits++;
-        addEdge(to);
+    public VertexInfo() { }
+
+    public VertexInfo(Integer id) {
+        this.id = id;
     }
 
-    public void addVisit() {
-        this.totalVisits++;
+    public void addVisit(Integer to, long times) {
+        this.totalVisits += times;
+        addEdge(to, times);
     }
 
-    public HashMap<String, Long> getEdges() {
+    public void addVisit(long times) {
+        this.totalVisits += times;
+    }
+
+    public HashMap<Integer, Long> getEdges() {
         return edges;
     }
 
-    public int getTotalVisits() {
+    public Long getTotalVisits() {
         return totalVisits;
     }
 
-    private void addEdge(String to) {
+    public void reduceVisits(Long numVisits) {
+        this.totalVisits -= numVisits;
+    }
+
+    public void clearVisits() {
+        this.totalVisits = 0L;
+    }
+
+    void removeEdge(String edgeName) {
+        if (edges.containsKey(edgeName)) {
+            reduceVisits(edges.get(edgeName));
+            edges.remove(edgeName);
+        }
+    }
+
+    private void addEdge(Integer to, long times) {
         Long totalVisits = 0L;
 
         if (edges.containsKey(to)) {
             totalVisits = edges.get(to);
         }
 
-        totalVisits++;
+        totalVisits += times;
         edges.put(to, totalVisits);
     }
 }

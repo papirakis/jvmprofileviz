@@ -24,7 +24,10 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.Locale;
 
-import com.jvmprofileviz.graph.GraphData;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.jvmprofileviz.stacktrace.StackTraceStats;
+import com.jvmprofileviz.ui.MainWindow;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -34,13 +37,9 @@ import com.jvmprofileviz.profiler.VMProfiler;
  * JvmProfile entry point class.
  *
  * - parses program arguments
- * - selects console profile
- * - prints header
  * - main "iteration loop"
  *
- * TODO: refactor to split these tasks
- *
- * @author paru
+ * @author paru, Emmanuel Papirakis
  *
  */
 public class JvmProfile {
@@ -65,9 +64,6 @@ public class JvmProfile {
         parser.acceptsAll(Arrays.asList(new String[] { "o", "out" }),
                 "The output file where the profiling information will be stored.").withRequiredArg().ofType(String.class);
 
-        parser.acceptsAll(Arrays.asList(new String[] { "i", "input" }),
-                "The input file from a previous profiling session.").withRequiredArg().ofType(String.class);
-
         return parser;
     }
 
@@ -84,8 +80,6 @@ public class JvmProfile {
         Integer pid = null;
 
         String outputFile = null;
-
-        String inputFile = null;
 
         double delay = 1.0;
 
@@ -110,29 +104,13 @@ public class JvmProfile {
             outputFile = (String) a.valueOf("out");
         }
 
-        if (a.hasArgument("input")) {
-            inputFile = (String) a.valueOf("input");
-        }
-
         if (pid == null) {
-            if (inputFile == null) {
-                System.err.println("With no PID specified, you need to provide an input file name.");
-                System.err.println();
-                printHelp(parser);
-            }
-
-            if (outputFile == null) {
-                System.err.println("With no PID specified, you need to provide an output file name.");
+            if (outputFile != null) {
+                System.err.println("With no PID specified, you cannot provide an output file name.");
                 System.err.println();
                 printHelp(parser);
             }
         } else {
-            if (inputFile != null) {
-                System.err.println("Without a PID specified, you cannot provide an input file name.");
-                System.err.println();
-                printHelp(parser);
-            }
-
             if (outputFile == null) {
                 System.err.println("Without no PID specified, you need to provide an output file name.");
                 System.err.println();
@@ -147,23 +125,32 @@ public class JvmProfile {
 
             VMProfiler profiler = new VMProfiler(pid);
             jvmProfile.run(profiler);
-            profiler.getGraphData().writeToFile(outputFile);
+            writeToFile(profiler.getStats(), outputFile);
         } else {
-            // Display the graph with graphviz.
-            GraphData graph = new GraphData(inputFile);
-            graph.writeSvgGraphFile(outputFile);
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    MainWindow mw = new MainWindow();
+                    try {
+                        mw.loadFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    mw.setVisible(true);
+                }
+            });
         }
     }
 
     public static void printHelp(OptionParser parser) throws IOException {
-        System.err.println("jvmtop - java monitoring for the command-line");
-        System.err.println("Usage: jvmtop.sh [options...] [PID]");
+        System.err.println("jvmprofileviz - java monitoring from inside Docker containers and more!");
+        System.err.println("Usage: jvmprofileviz.sh [options...]");
         System.err.println();
         parser.printHelpOn(System.err);
         System.exit(0);
     }
 
-    protected void run(VMProfiler profiler) throws Exception {
+    protected void run(VMProfiler profiler) {
         long startTime = System.currentTimeMillis();
 
         try {
@@ -186,6 +173,22 @@ public class JvmProfile {
             e.printStackTrace();
         }
     }
+
+    public static void writeToFile(StackTraceStats stats, String fileName) throws IOException {
+        FileWriter writer = null;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+        try {
+            writer = new FileWriter(new File(fileName));
+            writer.write(mapper.writeValueAsString(stats));
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
+    }
+
 
     public void setDelay(Double delay) {
         this.delay = delay;
