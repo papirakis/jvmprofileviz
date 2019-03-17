@@ -24,15 +24,10 @@ import java.lang.Thread.State;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.jvmprofileviz.graph.GraphData;
 import com.jvmprofileviz.monitor.VMInfo;
+import com.jvmprofileviz.stacktrace.StackTraceStatsBuilder;
+import com.jvmprofileviz.stacktrace.StackTraceStats;
 
 /**
  * Experimental and very basic sampling-based CPU-Profiler.
@@ -44,105 +39,42 @@ import com.jvmprofileviz.monitor.VMInfo;
  *
  */
 public class CPUSampler {
-    private ThreadMXBean threadMxBean_ = null;
+    private ThreadMXBean threadMxBean = null;
 
-    private ConcurrentMap<String, MethodStats> data_ = new ConcurrentHashMap<String, MethodStats>();
-
-    private AtomicLong totalThreadCPUTime_ = new AtomicLong(
-            0);
-
-    private ConcurrentMap<Long, Long> threadCPUTime = new ConcurrentHashMap<Long, Long>();
-
-    private AtomicLong updateCount_ = new AtomicLong(
-            0);
-
-    private VMInfo vmInfo_;
-
-    private GraphData graphData = new GraphData();
+    private final StackTraceStatsBuilder stackTraceStatsBuilder = new StackTraceStatsBuilder();
 
     /**
      * @param vmInfo
      * @throws Exception
      */
-    public CPUSampler(VMInfo vmInfo) throws Exception {
+    public CPUSampler(VMInfo vmInfo) {
         super();
-        threadMxBean_ = vmInfo.getThreadMXBean();
-        vmInfo_ = vmInfo;
+        threadMxBean = vmInfo.getThreadMXBean();
     }
 
-    public List<MethodStats> getTop(int limit) {
-        ArrayList<MethodStats> statList = new ArrayList<MethodStats>(data_.values());
-        Collections.sort(statList);
-        return statList.subList(0, Math.min(limit, statList.size()));
-    }
+    public void update() {
+        for (ThreadInfo ti : threadMxBean.dumpAllThreads(false, false)) {
 
-    public long getTotal() {
-        return totalThreadCPUTime_.get();
-    }
+            if (ti.getStackTrace().length > 0
+                    && ti.getThreadState() == State.RUNNABLE
+            ) {
+                StackTraceElement[] stackTrace = ti.getStackTrace();
+                ArrayList<String> stackTraceAsStrings = new ArrayList<String>();
 
-    public void update() throws Exception {
-        boolean samplesAcquired = false;
-        for (ThreadInfo ti : threadMxBean_.dumpAllThreads(false, false)) {
-            long cpuTime = threadMxBean_.getThreadCpuTime(ti.getThreadId());
-            Long tCPUTime = threadCPUTime.get(ti.getThreadId());
-            if (tCPUTime == null) {
-                tCPUTime = 0L;
-            } else {
-                Long deltaCpuTime = (cpuTime - tCPUTime);
-
-                if (ti.getStackTrace().length > 0
-                        && ti.getThreadState() == State.RUNNABLE
-                ) {
-                    StackTraceElement[] stackTrace = ti.getStackTrace();
-
-                    if (!shouldBeIgnored(stackTrace)) {
-                        for (int i = stackTrace.length - 1; i >= 0; i--) {
-                            StackTraceElement stElement = stackTrace[i];
-                            String keyFrom = stElement.getClassName() + "."
-                                    + stElement.getMethodName();
-                            data_.putIfAbsent(keyFrom, new MethodStats(stElement.getClassName(),
-                                    stElement.getMethodName()));
-                            data_.get(keyFrom).getHits().addAndGet(deltaCpuTime);
-                            totalThreadCPUTime_.addAndGet(deltaCpuTime);
-                            samplesAcquired = true;
-
-                            // Populate graphData information
-                            if (i > 0) {
-                                String keyTo = stackTrace[i - 1].getClassName() + "."
-                                        + stackTrace[i - 1].getMethodName();
-                                graphData.addVisit(keyFrom, keyTo);
-                            } else {
-                                graphData.addVisit(keyFrom);
-                            }
-                        }
-                    }
+                for (int i = stackTrace.length - 1; i >= 0; i--) {
+                    StackTraceElement stElement = stackTrace[i];
+                    String keyFrom = stElement.getClassName() + "."
+                            + stElement.getMethodName();
+                    stackTraceAsStrings.add(keyFrom);
                 }
-            }
 
-            threadCPUTime.put(ti.getThreadId(), tCPUTime);
-        }
-        if (samplesAcquired) {
-            updateCount_.incrementAndGet();
-        }
-    }
-
-    private boolean shouldBeIgnored(StackTraceElement[] stackTrace) {
-        for (StackTraceElement stElement : stackTrace) {
-            if (isReallySleeping(stElement)) {
-                return true;
+                stackTraceStatsBuilder.addStackTrace(stackTraceAsStrings);
             }
         }
-
-        return false;
     }
 
-    private boolean isReallySleeping(StackTraceElement se) {
-        return se.getClassName().equals("sun.nio.ch.EPollArrayWrapper") &&
-                se.getMethodName().equals("epollWait");
-    }
-
-    public GraphData getGraphData() {
-        return graphData;
+    public StackTraceStats getStats() {
+        return stackTraceStatsBuilder.getStats();
     }
 }
 

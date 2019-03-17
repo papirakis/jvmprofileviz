@@ -1,29 +1,27 @@
 package com.jvmprofileviz.ui;
 
-import com.jvmprofileviz.graph.VertexInfo;
+import com.jvmprofileviz.graph.GraphData;
+import com.jvmprofileviz.stacktrace.TopOfStackInfo;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ProfileTableModel extends AbstractTableModel {
     public static final int NUMBER_OF_COLUMNS = 3;
 
-    private ArrayList<VertexInfo> vertices;
+    private ArrayList<TopOfStackInfo> vertices;
     private ArrayList<Boolean> selected;
-    private int total = 0;
+    private long total = 0;
 
-    public void loadData(VertexInfo[] data) {
+    public void loadData(List<TopOfStackInfo> data) {
         total = 0;
-        vertices = new ArrayList<VertexInfo>();
-        vertices.addAll(Arrays.asList(data));
-
+        vertices = new ArrayList<TopOfStackInfo>(data);
         selected = new ArrayList<Boolean>();
 
-        for (int i = 0; i < data.length; i++ ) {
+        for (int i = 0; i < data.size(); i++ ) {
             selected.add(false);
-            total += vertices.get(i).getTotalVisits();
+            total += vertices.get(i).count;
         }
     }
 
@@ -43,18 +41,21 @@ public class ProfileTableModel extends AbstractTableModel {
             return selected.get(rowIndex);
         }
 
-        VertexInfo vertexInfo = vertices.get(rowIndex);
+        TopOfStackInfo vertexInfo = vertices.get(rowIndex);
 
         if (columnIndex == 0) {
-            return vertexInfo.getName();
+            return vertexInfo.methodName;
         }
 
-        return new Double(getPercentageOfCpu(vertexInfo.getTotalVisits()));
+        return new Double(getPercentageOfCpu((long)vertexInfo.count));
     }
 
-    public double getPercentageOfCpu(Long numVisits) {
-        double result = Math.round((double)numVisits / (double)total * 10000.0);
-        return result / 100;
+    private double getPercentageOfCpu(Long numVisits) {
+        return GraphData.getPercentageOfCpu(total, numVisits);
+    }
+
+    public long getTotalSamples() {
+        return total;
     }
 
     public List<String> getSelected() {
@@ -62,7 +63,7 @@ public class ProfileTableModel extends AbstractTableModel {
 
         for (int i = 0; i < selected.size(); i++) {
             if (selected.get(i)) {
-                result.add(vertices.get(i).getName());
+                result.add(vertices.get(i).methodName);
             }
         }
 

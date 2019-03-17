@@ -3,26 +3,26 @@ package com.jvmprofileviz.graph;
 import java.util.HashMap;
 
 public class VertexInfo {
-    private final HashMap<String, Long> edges = new HashMap<String, Long>();
-    private String name;
-    private Long totalVisits;
+    private final HashMap<Integer, Long> edges = new HashMap<Integer, Long>();
+    private Integer id;
+    private long totalVisits;
 
     public VertexInfo() { }
 
-    public VertexInfo(String name) {
-        this.name = name;
+    public VertexInfo(Integer id) {
+        this.id = id;
     }
 
-    public void addVisit(String to) {
-        this.totalVisits++;
+    public void addVisit(Integer to, long times) {
+        this.totalVisits += times;
         addEdge(to);
     }
 
-    public void addVisit() {
-        this.totalVisits++;
+    public void addVisit(long times) {
+        this.totalVisits += times;
     }
 
-    public HashMap<String, Long> getEdges() {
+    public HashMap<Integer, Long> getEdges() {
         return edges;
     }
 
@@ -45,9 +45,9 @@ public class VertexInfo {
         }
     }
 
-    public String getName() { return name; }
+    public Integer getId() { return id; }
 
-    private void addEdge(String to) {
+    private void addEdge(Integer to) {
         Long totalVisits = 0L;
 
         if (edges.containsKey(to)) {

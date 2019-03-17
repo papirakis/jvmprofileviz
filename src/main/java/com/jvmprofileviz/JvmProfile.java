@@ -24,7 +24,10 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.Locale;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.jvmprofileviz.graph.GraphData;
+import com.jvmprofileviz.stacktrace.StackTraceStats;
 import com.jvmprofileviz.ui.MainWindow;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -148,11 +151,8 @@ public class JvmProfile {
 
             VMProfiler profiler = new VMProfiler(pid);
             jvmProfile.run(profiler);
-            profiler.getGraphData().writeToFile(outputFile);
+            writeToFile(profiler.getStats(), outputFile);
         } else {
-//            // Display the graph with graphviz.
-//            GraphData graph = new GraphData(inputFile);
-//            graph.writeSvgGraphFile(outputFile);
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     MainWindow mw = new MainWindow();
@@ -199,6 +199,22 @@ public class JvmProfile {
             e.printStackTrace();
         }
     }
+
+    public static void writeToFile(StackTraceStats stats, String fileName) throws IOException {
+        FileWriter writer = null;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+        try {
+            writer = new FileWriter(new File(fileName));
+            writer.write(mapper.writeValueAsString(stats));
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
+    }
+
 
     public void setDelay(Double delay) {
         this.delay = delay;

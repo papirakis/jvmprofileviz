@@ -3,13 +3,15 @@ package com.jvmprofileviz.ui;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 
-public class GraphDeleteButtonPair extends JPanel {
-    private final JButton graph = new JButton("show graphs");
+public class GraphDeleteButtonCombo extends JPanel {
+    private final JButton graph = new JButton("show selected graphs");
     private final JButton delete = new JButton("delete selected");
+    private final JButton multiGraph = new JButton("display entire graph");
 
-    public GraphDeleteButtonPair() {
+    public GraphDeleteButtonCombo() {
         this.add(graph);
         this.add(delete);
+        this.add(multiGraph);
     }
 
     void addShowGraphActionListener(ActionListener listener) {
@@ -18,5 +20,9 @@ public class GraphDeleteButtonPair extends JPanel {
 
     void addDeleteSelectedActionListener(ActionListener listener) {
         delete.addActionListener(listener);
+    }
+
+    void addMultiGraphActionListener(ActionListener listener) {
+        multiGraph.addActionListener(listener);
     }
 }

@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class MainWindow extends JFrame {
-    private final GraphDeleteButtonPair buttons = new GraphDeleteButtonPair();
+    private final GraphDeleteButtonCombo buttons = new GraphDeleteButtonCombo();
     private Orchestrator orchestrator;
 
     public MainWindow() {
@@ -35,7 +35,7 @@ public class MainWindow extends JFrame {
 
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
-            orchestrator = new Orchestrator(selectedFile);
+            orchestrator = new Orchestrator(this,  selectedFile);
 
             JScrollPane scrollPane = new JScrollPane(orchestrator.getTable());
             this.getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -51,6 +51,13 @@ public class MainWindow extends JFrame {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     orchestrator.deleteClicked();
+                }
+            });
+
+            buttons.addMultiGraphActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    orchestrator.multiGraphClicked();
                 }
             });
         }

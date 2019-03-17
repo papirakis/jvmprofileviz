@@ -1,174 +1,51 @@
 package com.jvmprofileviz.graph;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import guru.nidi.graphviz.attribute.Label;
-import guru.nidi.graphviz.attribute.Size;
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
-import guru.nidi.graphviz.model.Link;
+import com.jvmprofileviz.stacktrace.IdManager;
 import guru.nidi.graphviz.model.MutableGraph;
-import guru.nidi.graphviz.model.MutableNode;
 
-import java.io.*;
 import java.util.HashMap;
-import java.util.List;
-
-import static guru.nidi.graphviz.model.Factory.mutGraph;
-import static guru.nidi.graphviz.model.Factory.mutNode;
 
 public class GraphData {
-    private static final ObjectMapper mapper = new ObjectMapper();
-    private final HashMap<String, VertexInfo> graph;
-    private List<String> roots;
-
-    static {
-        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-    }
+    private final HashMap<Integer, VertexInfo> graph;
 
     public GraphData() {
-        graph = new HashMap<String, VertexInfo>();
+        graph = new HashMap<Integer, VertexInfo>();
     }
 
-    public GraphData(String filePath) throws IOException {
-        this.graph = loadFromFile(filePath);
-    }
-
-    public void addVisit(String from, String to) {
+    public void addVisit(Integer from, Integer to, long times) {
         VertexInfo fromVertexInfo = getVertex(from);
-        fromVertexInfo.addVisit(to);
+        fromVertexInfo.addVisit(to, times);
     }
 
-    public void addVisit(String from) {
+    public void addVisit(Integer from, long times) {
         VertexInfo fromVertexInfo = getVertex(from);
-        fromVertexInfo.addVisit();
+        fromVertexInfo.addVisit(times);
     }
 
-    private VertexInfo getVertex(String key) {
+    private VertexInfo getVertex(Integer id) {
         VertexInfo vertexInfo;
 
-        if (!graph.containsKey(key)) {
-            vertexInfo = new VertexInfo(key);
-            graph.put(key, vertexInfo);
-            roots = null;
+        if (!graph.containsKey(id)) {
+            vertexInfo = new VertexInfo(id);
+            graph.put(id, vertexInfo);
         } else {
-            vertexInfo = graph.get(key);
+            vertexInfo = graph.get(id);
         }
 
         return vertexInfo;
     }
 
-    private String serialize() throws JsonProcessingException {
-        return mapper.writeValueAsString(graph);
+    public MutableGraph getCompleteGraph(Long maxVisits, IdManager idManager) {
+        CompleteGraphGenerator generator = new CompleteGraphGenerator(this, idManager);
+        return generator.generate(maxVisits);
     }
 
-    public void writeToFile(String fileName) throws IOException {
-        FileWriter writer = null;
-
-        try {
-            writer = new FileWriter(new File(fileName));
-            writer.write(this.serialize());
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
-        }
-    }
-
-    private static HashMap<String, VertexInfo> loadFromFile(String path) throws IOException {
-        FileReader reader = null;
-        BufferedReader buffered = null;
-
-        try {
-            StringBuilder builder = new StringBuilder();
-            reader = new FileReader(new File(path));
-            buffered = new BufferedReader(reader);
-
-            String line;
-
-            while ((line = buffered.readLine()) != null) {
-                builder.append(line);
-            }
-
-            String content = builder.toString();
-
-            TypeReference<HashMap<String,VertexInfo>> typeRef
-                    = new TypeReference<HashMap<String,VertexInfo>>() {};
-            return (HashMap<String, VertexInfo>) mapper.readValue(content, typeRef);
-        } finally {
-            if (buffered != null) {
-                buffered.close();
-            }
-        }
-    }
-
-    public void writeSvgGraphFile(String path) throws IOException {
-        MutableGraph g = mutGraph("profile").setDirected(true);
-        double maxVisits = getMaxVisits();
-
-        for (String key : graph.keySet()) {
-            VertexInfo vertex =  graph.get(key);
-
-            // Skip if not meaningful.
-            if (vertex.getTotalVisits() < maxVisits / 2) {
-                continue;
-            }
-
-            MutableNode node = mutNode(key);
-            double numVisits = vertex.getTotalVisits();
-            double size = numVisits / maxVisits;
-            node.add(Size.std().size(size, size));
-
-            for (String edge : vertex.getEdges().keySet()) {
-                Double visits = new Double(vertex.getEdges().get(edge));
-
-                visits /= maxVisits;
-                Link link = mutNode(edge).linkTo().add(Label.of(visits.toString()));
-                node.addLink(link);
-            }
-
-            g.add(node);
-        }
-
-        Graphviz.fromGraph(g).width(900).render(Format.SVG).toFile(new File(path));
-    }
-
-    private double getMaxVisits() {
-        Long max = 0L;
-        for (String key : graph.keySet()) {
-            VertexInfo vertex = graph.get(key);
-
-            if (max < vertex.getTotalVisits()) {
-                max = vertex.getTotalVisits();
-            }
-        }
-
-        return max;
-    }
-
-    public VertexInfo[] findLeafs() {
-        LeafFinder leafFinder = new LeafFinder(this);
-        return leafFinder.run();
-    }
-
-    public List<String> getRoots() {
-        if (roots == null) {
-            RootFinder finder = new RootFinder(this);
-            roots = finder.findRoots();
-        }
-
-        return roots;
-    }
-
-    public void removeLeafs(List<String> toRemove) {
-        LeafRemover remover = new LeafRemover(this);
-        remover.remove(getRoots(), toRemove);
-        roots = null;
-    }
-
-    HashMap<String, VertexInfo> getGraph() {
+    HashMap<Integer, VertexInfo> getGraph() {
         return graph;
+    }
+
+    public static double getPercentageOfCpu(Long maxVisits, Long numVisits) {
+        double result = Math.round((double)numVisits / (double)maxVisits * 10000.0);
+        return result / 100;
     }
 }
