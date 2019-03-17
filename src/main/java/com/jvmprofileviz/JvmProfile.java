@@ -26,7 +26,6 @@ import java.util.Locale;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.jvmprofileviz.graph.GraphData;
 import com.jvmprofileviz.stacktrace.StackTraceStats;
 import com.jvmprofileviz.ui.MainWindow;
 import joptsimple.OptionParser;
@@ -38,13 +37,9 @@ import com.jvmprofileviz.profiler.VMProfiler;
  * JvmProfile entry point class.
  *
  * - parses program arguments
- * - selects console profile
- * - prints header
  * - main "iteration loop"
  *
- * TODO: refactor to split these tasks
- *
- * @author paru
+ * @author paru, Emmanuel Papirakis
  *
  */
 public class JvmProfile {
@@ -69,9 +64,6 @@ public class JvmProfile {
         parser.acceptsAll(Arrays.asList(new String[] { "o", "out" }),
                 "The output file where the profiling information will be stored.").withRequiredArg().ofType(String.class);
 
-        parser.acceptsAll(Arrays.asList(new String[] { "i", "input" }),
-                "The input file from a previous profiling session.").withRequiredArg().ofType(String.class);
-
         return parser;
     }
 
@@ -88,8 +80,6 @@ public class JvmProfile {
         Integer pid = null;
 
         String outputFile = null;
-
-        String inputFile = null;
 
         double delay = 1.0;
 
@@ -114,35 +104,19 @@ public class JvmProfile {
             outputFile = (String) a.valueOf("out");
         }
 
-        if (a.hasArgument("input")) {
-            inputFile = (String) a.valueOf("input");
+        if (pid == null) {
+            if (outputFile != null) {
+                System.err.println("With no PID specified, you cannot provide an output file name.");
+                System.err.println();
+                printHelp(parser);
+            }
+        } else {
+            if (outputFile == null) {
+                System.err.println("Without no PID specified, you need to provide an output file name.");
+                System.err.println();
+                printHelp(parser);
+            }
         }
-
-//        if (pid == null) {
-//            if (inputFile == null) {
-//                System.err.println("With no PID specified, you need to provide an input file name.");
-//                System.err.println();
-//                printHelp(parser);
-//            }
-//
-//            if (outputFile == null) {
-//                System.err.println("With no PID specified, you need to provide an output file name.");
-//                System.err.println();
-//                printHelp(parser);
-//            }
-//        } else {
-//            if (inputFile != null) {
-//                System.err.println("Without a PID specified, you cannot provide an input file name.");
-//                System.err.println();
-//                printHelp(parser);
-//            }
-//
-//            if (outputFile == null) {
-//                System.err.println("Without no PID specified, you need to provide an output file name.");
-//                System.err.println();
-//                printHelp(parser);
-//            }
-//        }
 
         if (pid != null) {
             JvmProfile jvmProfile = new JvmProfile();
@@ -169,14 +143,14 @@ public class JvmProfile {
     }
 
     public static void printHelp(OptionParser parser) throws IOException {
-        System.err.println("jvmtop - java monitoring for the command-line");
-        System.err.println("Usage: jvmtop.sh [options...] [PID]");
+        System.err.println("jvmprofileviz - java monitoring from inside Docker containers and more!");
+        System.err.println("Usage: jvmprofileviz.sh [options...]");
         System.err.println();
         parser.printHelpOn(System.err);
         System.exit(0);
     }
 
-    protected void run(VMProfiler profiler) throws Exception {
+    protected void run(VMProfiler profiler) {
         long startTime = System.currentTimeMillis();
 
         try {
