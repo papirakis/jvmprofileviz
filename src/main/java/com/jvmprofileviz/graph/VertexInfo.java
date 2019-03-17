@@ -15,7 +15,7 @@ public class VertexInfo {
 
     public void addVisit(Integer to, long times) {
         this.totalVisits += times;
-        addEdge(to);
+        addEdge(to, times);
     }
 
     public void addVisit(long times) {
@@ -45,16 +45,14 @@ public class VertexInfo {
         }
     }
 
-    public Integer getId() { return id; }
-
-    private void addEdge(Integer to) {
+    private void addEdge(Integer to, long times) {
         Long totalVisits = 0L;
 
         if (edges.containsKey(to)) {
             totalVisits = edges.get(to);
         }
 
-        totalVisits++;
+        totalVisits += times;
         edges.put(to, totalVisits);
     }
 }

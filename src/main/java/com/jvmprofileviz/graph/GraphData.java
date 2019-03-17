@@ -35,8 +35,8 @@ public class GraphData {
         return vertexInfo;
     }
 
-    public MutableGraph getCompleteGraph(Long maxVisits, IdManager idManager) {
-        CompleteGraphGenerator generator = new CompleteGraphGenerator(this, idManager);
+    public MutableGraph generateMutableGraph(Long maxVisits, IdManager idManager) {
+        MutableGraphGenerator generator = new MutableGraphGenerator(this, idManager);
         return generator.generate(maxVisits);
     }
 

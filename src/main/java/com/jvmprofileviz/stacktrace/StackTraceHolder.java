@@ -37,8 +37,7 @@ public class StackTraceHolder {
         HashMap<Integer, Integer> topOfStacks = new HashMap<Integer, Integer>();
 
         for (StackTraceInfo info : stackTraceInfo) {
-            int lastIndex = info.callStack.size() - 1;
-            Integer top = info.callStack.get(lastIndex);
+            Integer top = getTopOfStack(info);
 
             if (topOfStacks.containsKey(top)) {
                 Integer current = topOfStacks.get(top);
@@ -61,6 +60,11 @@ public class StackTraceHolder {
         return result;
     }
 
+    private Integer getTopOfStack(StackTraceInfo info) {
+        int lastIndex = info.callStack.size() - 1;
+        return info.callStack.get(lastIndex);
+    }
+
     public void removeWithTopOfStack(List<String> toRemove) {
         final HashSet<Integer> toRemoveHash = new HashSet<Integer>();
 
@@ -80,13 +84,36 @@ public class StackTraceHolder {
     }
 
     public MutableGraph generateGraph(long maxVisits) {
+        return generateGraph(stackTraceInfo, maxVisits);
+    }
+
+    public MutableGraph generateSubsetGraph(List<String> withTopOfStacks, long maxVisits) {
+        List<StackTraceInfo> stackTraces = new ArrayList<StackTraceInfo>(stackTraceInfo);
+        final HashSet<Integer> topOfStacks = new HashSet<Integer>();
+
+        for (String methodName : withTopOfStacks) {
+            topOfStacks.add(idManager.getIdForMethodName(methodName));
+        }
+
+        stackTraces.removeIf(new Predicate<StackTraceInfo>() {
+            @Override
+            public boolean test(StackTraceInfo stackTraceInfo) {
+                Integer top = getTopOfStack(stackTraceInfo);
+                return !topOfStacks.contains(top);
+            }
+        });
+
+        return generateGraph(stackTraces, maxVisits);
+    }
+
+    private MutableGraph generateGraph(List<StackTraceInfo> stackTraces, long maxVisits) {
         GraphData graphData = new GraphData();
 
-        for (StackTraceInfo info : stackTraceInfo) {
+        for (StackTraceInfo info : stackTraces) {
             addStackTraceInfo(graphData, info);
         }
 
-        return graphData.getCompleteGraph(maxVisits, idManager);
+        return graphData.generateMutableGraph(maxVisits, idManager);
     }
 
     private void addStackTraceInfo(GraphData graphData, StackTraceInfo info) {

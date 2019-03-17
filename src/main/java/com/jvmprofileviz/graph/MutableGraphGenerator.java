@@ -11,11 +11,11 @@ import java.util.HashMap;
 import static guru.nidi.graphviz.model.Factory.mutGraph;
 import static guru.nidi.graphviz.model.Factory.mutNode;
 
-class CompleteGraphGenerator {
+class MutableGraphGenerator {
     private final HashMap<Integer, VertexInfo> graphData;
     private final IdManager manager;
 
-    public  CompleteGraphGenerator(GraphData graphData, IdManager manager) {
+    public MutableGraphGenerator(GraphData graphData, IdManager manager) {
         this.graphData = graphData.getGraph();
         this.manager = manager;
     }

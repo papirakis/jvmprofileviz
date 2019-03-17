@@ -38,7 +38,9 @@ class Orchestrator {
     }
 
     public void showGraphClicked() {
-        System.out.println("showGraphClicked");
+        MutableGraph g = stackTraceHolder.generateSubsetGraph(tableModel.getSelected(), tableModel.getTotalSamples());
+
+        processMutableGraph(g, "multigraph");
     }
 
     public void deleteClicked() {
