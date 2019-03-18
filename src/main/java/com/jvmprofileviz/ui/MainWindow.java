@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class MainWindow extends JFrame {
-    private final GraphDeleteButtonCombo buttons = new GraphDeleteButtonCombo();
+    private final ButtonCombo buttons = new ButtonCombo();
     private Orchestrator orchestrator;
 
     public MainWindow() {
@@ -58,6 +58,20 @@ public class MainWindow extends JFrame {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     orchestrator.multiGraphClicked();
+                }
+            });
+
+            buttons.addSelectAllActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    orchestrator.selectAllClicked();
+                }
+            });
+
+            buttons.addUnselectAllActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    orchestrator.unselectAllClicked();
                 }
             });
         }

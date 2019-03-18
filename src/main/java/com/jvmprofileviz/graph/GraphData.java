@@ -4,6 +4,7 @@ import com.jvmprofileviz.stacktrace.IdManager;
 import guru.nidi.graphviz.model.MutableGraph;
 
 import java.util.HashMap;
+import java.util.Set;
 
 public class GraphData {
     private final HashMap<Integer, VertexInfo> graph;
@@ -35,9 +36,9 @@ public class GraphData {
         return vertexInfo;
     }
 
-    public MutableGraph generateMutableGraph(Long maxVisits, IdManager idManager) {
+    public MutableGraph generateMutableGraph(Set<Integer> roots, Set<Integer> leafs, Long maxVisits, IdManager idManager) {
         MutableGraphGenerator generator = new MutableGraphGenerator(this, idManager);
-        return generator.generate(maxVisits);
+        return generator.generate(roots, leafs, maxVisits);
     }
 
     HashMap<Integer, VertexInfo> getGraph() {
