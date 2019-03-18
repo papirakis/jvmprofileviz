@@ -1,8 +1,27 @@
+/**
+ * JvmProfile - java monitoring from inside Docker containers and more!
+ *
+ * Copyright (C) 2019 by Emmanuel Papirakis. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package com.jvmprofileviz.stacktrace;
 
 import com.jvmprofileviz.graph.GraphData;
 import guru.nidi.graphviz.model.MutableGraph;
-import guru.nidi.graphviz.model.MutableNode;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -18,7 +37,7 @@ public class StackTraceHolder {
         }
 
         idManager = new IdManager(stats.methods);
-        stackTraceInfo = new ArrayList<StackTraceInfo>(stats.data);
+        stackTraceInfo = new ArrayList<>(stats.data);
         stackTraceInfo.removeIf(new Predicate<StackTraceInfo>() {
             @Override
             public boolean test(StackTraceInfo info) {
@@ -117,8 +136,13 @@ public class StackTraceHolder {
         }
 
         Set<Integer> roots = getRoots();
-        Map<Integer, Integer> leafsMap = getTopOfStacksMap();
-        Set<Integer> leafs = new HashSet<Integer>(leafsMap.keySet());
+        Set<Integer> leafs = new HashSet<>();
+
+        for (StackTraceInfo stackTraceInfo : stackTraces) {
+            Integer top = getTopOfStack(stackTraceInfo);
+            leafs.add(top);
+        }
+
         return graphData.generateMutableGraph(roots, leafs, maxVisits, idManager);
     }
 

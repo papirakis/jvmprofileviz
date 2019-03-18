@@ -1,11 +1,31 @@
+/**
+ * JvmProfile - java monitoring from inside Docker containers and more!
+ *
+ * Copyright (C) 2019 by Emmanuel Papirakis. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
 package com.jvmprofileviz.ui;
 
 import com.jvmprofileviz.graph.GraphData;
 import com.jvmprofileviz.stacktrace.TopOfStackInfo;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class ProfileTableModel extends AbstractTableModel {
@@ -24,6 +44,13 @@ public class ProfileTableModel extends AbstractTableModel {
             selected.add(false);
             total += vertices.get(i).count;
         }
+
+        vertices.sort(new Comparator<TopOfStackInfo>() {
+            @Override
+            public int compare(TopOfStackInfo o1, TopOfStackInfo o2) {
+                return o2.count - o1.count;
+            }
+        });
     }
 
     @Override

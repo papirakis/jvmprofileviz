@@ -35,7 +35,7 @@ import com.jvmprofileviz.stacktrace.StackTraceStats;
  * It uses package excludes to filter common 3rd party libraries which often
  * distort application problems.
  *
- * @author paru
+ * @author paru, Emmanuel Papirakis
  *
  */
 public class CPUSampler {

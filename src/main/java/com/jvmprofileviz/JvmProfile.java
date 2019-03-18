@@ -1,7 +1,7 @@
 /**
- * jvmtop - java monitoring for the command-line
+ * JvmProfile - java monitoring from inside Docker containers and more!
  *
- * Copyright (C) 2013 by Patric Rufflar. All rights reserved.
+ * Copyright (C) 2019 by Emmanuel Papirakis. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  *
@@ -39,7 +39,7 @@ import com.jvmprofileviz.profiler.VMProfiler;
  * - parses program arguments
  * - main "iteration loop"
  *
- * @author paru, Emmanuel Papirakis
+ * @author Emmanuel Papirakis
  *
  */
 public class JvmProfile {
