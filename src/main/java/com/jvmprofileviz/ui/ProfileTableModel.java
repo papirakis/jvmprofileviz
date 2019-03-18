@@ -2,6 +2,7 @@ package com.jvmprofileviz.ui;
 
 import com.jvmprofileviz.graph.GraphData;
 import com.jvmprofileviz.stacktrace.TopOfStackInfo;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -68,6 +69,18 @@ public class ProfileTableModel extends AbstractTableModel {
         }
 
         return result;
+    }
+
+    public void selectAll() {
+        for (int i = 0; i < selected.size(); i++) {
+            selected.set(i, true);
+        }
+    }
+
+    public void unselectAll() {
+        for (int i = 0; i < selected.size(); i++) {
+            selected.set(i, false);
+        }
     }
 
     @Override

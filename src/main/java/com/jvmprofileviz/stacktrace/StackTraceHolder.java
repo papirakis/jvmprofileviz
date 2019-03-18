@@ -2,11 +2,9 @@ package com.jvmprofileviz.stacktrace;
 
 import com.jvmprofileviz.graph.GraphData;
 import guru.nidi.graphviz.model.MutableGraph;
+import guru.nidi.graphviz.model.MutableNode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class StackTraceHolder {
@@ -33,7 +31,7 @@ public class StackTraceHolder {
         }
     }
 
-    public List<TopOfStackInfo> getTopOfStacks() {
+    private Map<Integer, Integer> getTopOfStacksMap() {
         HashMap<Integer, Integer> topOfStacks = new HashMap<Integer, Integer>();
 
         for (StackTraceInfo info : stackTraceInfo) {
@@ -48,6 +46,11 @@ public class StackTraceHolder {
             }
         }
 
+        return topOfStacks;
+    }
+
+    public List<TopOfStackInfo> getTopOfStacks() {
+        Map<Integer, Integer> topOfStacks = getTopOfStacksMap();
         List<TopOfStackInfo> result = new ArrayList<TopOfStackInfo>();
 
         for (Integer top : topOfStacks.keySet()) {
@@ -113,7 +116,22 @@ public class StackTraceHolder {
             addStackTraceInfo(graphData, info);
         }
 
-        return graphData.generateMutableGraph(maxVisits, idManager);
+        Set<Integer> roots = getRoots();
+        Map<Integer, Integer> leafsMap = getTopOfStacksMap();
+        Set<Integer> leafs = new HashSet<Integer>(leafsMap.keySet());
+        return graphData.generateMutableGraph(roots, leafs, maxVisits, idManager);
+    }
+
+    private Set<Integer> getRoots() {
+        HashSet<Integer> roots = new HashSet<Integer>();
+
+        for (StackTraceInfo info : stackTraceInfo) {
+            if (info.callStack.size() >= 1) {
+                roots.add(info.callStack.get(0));
+            }
+        }
+
+        return roots;
     }
 
     private void addStackTraceInfo(GraphData graphData, StackTraceInfo info) {

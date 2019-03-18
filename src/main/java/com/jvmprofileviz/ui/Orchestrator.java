@@ -57,6 +57,16 @@ class Orchestrator {
         processMutableGraph(g, "multigraph");
     }
 
+    public void selectAllClicked() {
+        tableModel.selectAll();
+        tableModel.fireTableDataChanged();
+    }
+
+    public void unselectAllClicked() {
+        tableModel.unselectAll();
+        tableModel.fireTableDataChanged();
+    }
+
     private void processMutableGraph(MutableGraph g, String filePrefix) {
         try {
             File temp = File.createTempFile(filePrefix, ".svg");
